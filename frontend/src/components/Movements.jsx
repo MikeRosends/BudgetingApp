@@ -8,30 +8,32 @@ import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
-export default function Accounts() {
-  const [accountsArr, setAccountsArr] = useState([]);
+export default function Movements() {
+  const [movementsArr, setMovementsArr] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8181/v1/accounts").then((response) => {
+    axios.get("http://localhost:8181/v1/movements").then((response) => {
       const data = response.data;
-      setAccountsArr(data);
+      setMovementsArr(data);
     });
   }, []);
 
-  console.log(accountsArr);
+  console.log('Movements Array -> ', movementsArr);
 
   return (
     <div className="flex">
       <Sidebar />
       <div className="w-screen">
-        <DataTable value={accountsArr} tableStyle={{ width: "50rem" }}>
+        <DataTable value={movementsArr} tableStyle={{ width: "50rem" }}>
+          <Column field="movement_id" header="Movement Id" className="text-center"></Column>
           <Column field="account_id" header="Account Id" className="text-center"></Column>
           <Column
-            field="account_creation_date"
-            header="Created On"
-            body={(rowData) => format(rowData.account_creation_date, 'dd-MM-yyyy')}
+            field="movement_date"
+            header="Movement Date"
+            body={rowData => format(rowData.movement_date, 'dd-MM-yyyy')}
           ></Column>
-          <Column field="account_name" header="Account Name"></Column>
+          <Column field="movement_name" header="Movement Name" body={rowData => rowData.amount > 0 ? 'Deposit' : 'Withdrawal'}></Column>
+          <Column field="description" header="Description"></Column>
           <Column field="amount" header="Amount"></Column>
         </DataTable>
       </div>

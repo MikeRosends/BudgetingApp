@@ -34,6 +34,7 @@ export default function SidebarComponent() {
           <MenuItem component={<Link to="/dashboard" />}>Dashboard</MenuItem>
           <SubMenu defaultOpen label="Mapas">
             <MenuItem component={<Link to="/accounts" />}>Accounts</MenuItem>
+            <MenuItem component={<Link to="/movements" />}>Movements</MenuItem>
           </SubMenu>
         </Menu>
       </Sidebar>
