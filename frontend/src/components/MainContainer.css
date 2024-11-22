@@ -1,0 +1,81 @@
+.main-container {
+    margin: 20px;
+    padding: 10px;
+    width: 100vh;
+    background-color: rgb(247, 247, 247);
+    border-radius: 30px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0 5vh;
+}
+
+.header-title {
+    font-size: 40px;
+}
+
+.header-date {
+    font-size: 25px;
+}
+
+.main-stats {
+    display: flex;
+    padding: 0 5vh;
+    margin: 20px 0;
+}
+
+.individual-stat {
+    padding-right: 5vh;
+}
+
+.individual-stat h2{
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.individual-stat p{
+    font-size: small;
+}
+
+.cards-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-row {
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px;
+    width: 30%;
+    background-color: rgb(255, 255, 255);
+    box-shadow: 7px 7px 40px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);    
+}
+
+.card p {
+    margin-bottom: 20px;
+}
+
+.card-amount {
+    font-size: x-large;
+    font-weight: bold;
+}
+
+.card button {
+    background-color: #49ded7;
+    height: 40px;
+    color: white;
+    border-radius: 15px;
+    padding: 5px 15px;
+    text-wrap: nowrap;
+    box-shadow: 7px 7px 20px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);    
+}
