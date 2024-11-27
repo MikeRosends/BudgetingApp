@@ -3,7 +3,8 @@ import Sidebar from "./Sidebar";
 import axios from "axios";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import format from 'date-fns/format';
+import format from "date-fns/format";
+import { jwtDecode } from 'jwt-decode';
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
@@ -12,24 +13,49 @@ export default function Accounts() {
   const [accountsArr, setAccountsArr] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8181/v1/accounts").then((response) => {
-      const data = response.data;
-      setAccountsArr(data);
-    });
-  }, []);
+    // Get the token from localStorage
+    const token = localStorage.getItem("token");
 
-  console.log(accountsArr);
+    if (token) {
+      // Decode the token to get the user ID
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.id; // Assuming 'id' is the key for user ID in the token payload
+
+      // Send the user_id as a query parameter in the Axios request
+      axios
+        .get("http://localhost:8181/v1/account_with_userid", {
+          params: { user_id: userId }, // Pass user_id as a query parameter
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log('DATA -> ', data);
+          
+          setAccountsArr(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching accounts:", error);
+        });
+    } else {
+      console.error("Token not found in localStorage");
+    }
+  }, []);
 
   return (
     <div className="flex">
       <Sidebar />
       <div className="w-screen">
         <DataTable value={accountsArr} tableStyle={{ width: "50rem" }}>
-          <Column field="account_id" header="Account Id" className="text-center"></Column>
+          <Column
+            field="account_id"
+            header="Account Id"
+            className="text-center"
+          ></Column>
           <Column
             field="account_creation_date"
             header="Created On"
-            body={(rowData) => format(rowData.account_creation_date, 'dd-MM-yyyy')}
+            body={(rowData) =>
+              format(rowData.account_creation_date, "dd-MM-yyyy")
+            }
           ></Column>
           <Column field="account_name" header="Account Name"></Column>
           <Column field="amount" header="Amount"></Column>

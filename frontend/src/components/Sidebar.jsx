@@ -36,6 +36,7 @@ export default function SidebarComponent() {
             <MenuItem component={<Link to="/accounts" />}>Accounts</MenuItem>
             <MenuItem component={<Link to="/movements" />}>Movements</MenuItem>
           </SubMenu>
+          <MenuItem component={<Link to="/login" />}>Logout</MenuItem>
         </Menu>
       </Sidebar>
     </div>

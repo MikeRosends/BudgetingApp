@@ -1,7 +1,31 @@
-import React from "react";
+import { React, useState } from "react";
 import "./MainContainer.css";
+import axios from "axios";
+
+// https://codepen.io/aybukeceylan/pen/OJRNbZp - inspiration
 
 export const MainContainer = () => {
+  const [message, setMessage] = useState("");
+
+  // Function to test the protected route
+  const handleTestProtectedRoute = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get("http://localhost:8181/v1/test", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(res.data); // Log the response to verify user_id and other data
+      setMessage(`Protected Route Response: ${JSON.stringify(res.data)}`);
+    } catch (err) {
+      console.error(err);
+      setMessage(
+        err.response?.data?.message || "Failed to access protected route"
+      );
+    }
+  };
+
   return (
     <div className="main-container">
       <div className="header">
@@ -10,6 +34,10 @@ export const MainContainer = () => {
           21<sup>st</sup> of november
         </p>
       </div>
+      {/* Button to test the protected route */}
+      <button type="button" onClick={handleTestProtectedRoute}>
+        Test Protected Route
+      </button>
       <div className="main-stats">
         <div className="individual-stat">
           <h2>45</h2>
@@ -30,7 +58,7 @@ export const MainContainer = () => {
             <p>Account 1</p>
             <p className="card-amount">345 €</p>
             <button>
-              <p >Check Movements</p>
+              <p>Check Movements</p>
             </button>
           </div>
           <div className="card">
