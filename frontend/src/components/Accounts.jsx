@@ -40,16 +40,15 @@ export default function Accounts() {
     }
   }, []);
 
+  const allowEdit = (rowData) => {
+    return rowData.name !== 'Blue Band';
+};
+
   return (
     <div className="flex">
       <Sidebar />
       <div className="w-screen">
         <DataTable value={accountsArr} tableStyle={{ width: "50rem" }}>
-          <Column
-            field="account_id"
-            header="Account Id"
-            className="text-center"
-          ></Column>
           <Column
             field="account_creation_date"
             header="Created On"
@@ -59,6 +58,7 @@ export default function Accounts() {
           ></Column>
           <Column field="account_name" header="Account Name"></Column>
           <Column field="amount" header="Amount"></Column>
+          <Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column>
         </DataTable>
       </div>
     </div>

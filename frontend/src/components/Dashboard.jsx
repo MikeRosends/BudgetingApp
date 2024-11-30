@@ -15,16 +15,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-{/* <div className="frame">
-  <div className="m-20">
-    <Link to="/movements">
-      <button class="custom-btn btn-4 text-nowrap px-10">
-        <span className="px-10">Check Movements</span>
-      </button>
-    </Link>
-
-    <button class="custom-btn btn-13">Add Other movement</button>
-  </div>
-</div>;
- */}

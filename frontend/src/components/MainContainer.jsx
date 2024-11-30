@@ -1,11 +1,32 @@
-import { React, useState } from "react";
+import { React, useEffect, useState } from "react";
 import "./MainContainer.css";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 // https://codepen.io/aybukeceylan/pen/OJRNbZp - inspiration
 
 export const MainContainer = () => {
   const [message, setMessage] = useState("");
+  const [accountAmount, setAccountAmount] = useState(0);
+
+  useEffect(() => {
+
+    const token = localStorage.getItem("token");
+    console.log('TOKEN -> ', token);
+    
+    axios.get("http://localhost:8181/v1/account_total_amount", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }).then(res => {
+        console.log(res);
+        
+        setAccountAmount(res.data);
+      })
+  })
+
+  console.log('account amount -> ', accountAmount);
+  
 
   // Function to test the protected route
   const handleTestProtectedRoute = async () => {
@@ -18,6 +39,7 @@ export const MainContainer = () => {
       });
       console.log(res.data); // Log the response to verify user_id and other data
       setMessage(`Protected Route Response: ${JSON.stringify(res.data)}`);
+
     } catch (err) {
       console.error(err);
       setMessage(
@@ -56,43 +78,15 @@ export const MainContainer = () => {
         <div className="card-row">
           <div className="card">
             <p>Account 1</p>
-            <p className="card-amount">345 €</p>
-            <button>
-              <p>Check Movements</p>
-            </button>
+            <p className="card-amount">{accountAmount} €</p>
+            <Link to="/accounts">
+              <button>
+                <p>Check Movements</p>
+              </button>
+            </Link>
           </div>
           <div className="card">
             <p>Account 2</p>
-            <p className="card-amount">345 €</p>
-            <button>
-              <p>Check Movements</p>
-            </button>
-          </div>
-          <div className="card">
-            <p>Account 3</p>
-            <p className="card-amount">345 €</p>
-            <button>
-              <p>Check Movements</p>
-            </button>
-          </div>
-        </div>
-        <div className="card-row">
-          <div className="card">
-            <p>Account 4</p>
-            <p className="card-amount">345 €</p>
-            <button>
-              <p>Check Movements</p>
-            </button>
-          </div>
-          <div className="card">
-            <p>Account 5</p>
-            <p className="card-amount">345 €</p>
-            <button>
-              <p>Check Movements</p>
-            </button>
-          </div>
-          <div className="card">
-            <p>Account 6</p>
             <p className="card-amount">345 €</p>
             <button>
               <p>Check Movements</p>
