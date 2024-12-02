@@ -1,11 +1,12 @@
 const pgConnection = require("../secrets/dbConnections");
 
-const getUsers = async function () {
-  const query = `SELECT * FROM public._user_profiles`;
+const getUserByEmail = async function (user_email, user_password) {
+  const query = `SELECT * FROM public._user_profiles WHERE user_email  = $1`;
+  console.log("REPO -> ", user_email);
 
   try {
-    const { rows } = await pgConnection.query(query);
-    return rows;
+    const { rows } = await pgConnection.query(query, [user_email]);
+    return rows[0];
   } catch (err) {
     console.error("Error fetching users:", err);
     throw new Error("Database query failed"); // Pass error to caller
@@ -26,4 +27,4 @@ const insertNewUserProfile = async function (user_email, user_password) {
   }
 };
 
-module.exports = { getUsers, insertNewUserProfile };
+module.exports = { insertNewUserProfile, getUserByEmail };

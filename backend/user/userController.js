@@ -1,8 +1,8 @@
 const express = require("express");
 const {
   loadUsers,
-  validateUserAndGenerateToken,
-  loadUserToDatabase,
+  insertUserInDB,
+  userLogin,
 } = require("./userService");
 const authMiddleware = require("./authMiddleware");
 const router = express.Router();
@@ -29,7 +29,7 @@ router.post("/v1/register", async (req, res) => {
   console.log("REGISTER ENDPOINT BEING CALLED");
 
   try {
-    await loadUserToDatabase(user_email, user_password);
+    await insertUserInDB(user_email, user_password);
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
     console.error("Error in register route:", err);
@@ -51,7 +51,7 @@ router.post("/v1/login", async (req, res) => {
   }
 
   try {
-    const token = await validateUserAndGenerateToken(user_email, user_password);
+    const token = await userLogin(user_email, user_password);
     res.json({ token });
   } catch (err) {
     if (err.message === "User not found") {

@@ -10,23 +10,18 @@ export const MainContainer = () => {
   const [accountAmount, setAccountAmount] = useState(0);
 
   useEffect(() => {
-
     const token = localStorage.getItem("token");
-    console.log('TOKEN -> ', token);
-    
-    axios.get("http://localhost:8181/v1/account_total_amount", {
+
+    axios
+      .get("http://localhost:8181/v1/account_total_amount", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }).then(res => {
-        console.log(res);
-        
-        setAccountAmount(res.data);
       })
-  })
-
-  console.log('account amount -> ', accountAmount);
-  
+      .then((res) => {
+        res.data < 0 ? setAccountAmount(res.data) : setAccountAmount(0);
+      });
+  });
 
   // Function to test the protected route
   const handleTestProtectedRoute = async () => {
@@ -37,9 +32,7 @@ export const MainContainer = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(res.data); // Log the response to verify user_id and other data
       setMessage(`Protected Route Response: ${JSON.stringify(res.data)}`);
-
     } catch (err) {
       console.error(err);
       setMessage(
