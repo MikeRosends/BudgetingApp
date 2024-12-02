@@ -13,19 +13,6 @@ const getAccountsWithUserId = async function (user_id) {
   }
 };
 
-const getAccounts = async function (accountName, user_id) {
-  try {
-    let query = `
-    SELECT * FROM public._account
-    `;
-    const { rows } = await pgConnection.query(query);
-
-    return rows;
-  } catch (err) {
-    console.error("Error fetching accounts with user_id", err);
-  }
-};
-
 const findAccountByName = async function (accountName, user_id) {
   try {
     const query = `
@@ -59,7 +46,6 @@ const getAccountTotalAmount = async function (user_id) {
 };
 
 module.exports = {
-  getAccounts,
   findAccountByName,
   getAccountsWithUserId,
   getAccountTotalAmount,

@@ -1,6 +1,5 @@
 const express = require("express");
 const {
-  loadAccounts,
   loadAccountByName,
   loadAccountsWithUserId,
   loadAccountTotalAmount,
@@ -8,16 +7,6 @@ const {
 const authMiddleware = require("../user/authMiddleware");
 
 const router = express.Router();
-
-router.get("/v1/accounts", async (req, res) => {
-  try {
-    const data = await loadAccounts();
-    res.json(data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "error getting accounts" });
-  }
-});
 
 router.get("/v1/account_with_userid", async (req, res) => {
   try {

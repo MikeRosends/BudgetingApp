@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const {
-  getAccounts,
   findAccountByName,
   getAccountsWithUserId,
   getAccountTotalAmount,
@@ -9,15 +8,6 @@ const {
 
 const app = express();
 app.use(express.json());
-
-const loadAccounts = async function () {
-  try {
-    const data = await getAccounts();
-    return data;
-  } catch (err) {
-    console.error("Error loading accounts -> ", err);
-  }
-};
 
 const loadAccountsWithUserId = async function (user_id) {
   try {
@@ -50,7 +40,6 @@ const loadAccountTotalAmount = async function (user_id) {
 }
 
 module.exports = {
-  loadAccounts,
   loadAccountByName,
   loadAccountsWithUserId,
   loadAccountTotalAmount
