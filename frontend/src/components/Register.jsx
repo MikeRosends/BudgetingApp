@@ -19,7 +19,6 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log(formData);
       axios
         .post("http://localhost:8181/v1/register", formData)
         .then(() => {

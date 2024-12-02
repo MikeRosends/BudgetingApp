@@ -2,7 +2,10 @@ require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { getUsers, insertNewUserProfile } = require("./userRepository");
+const {
+  insertNewUserProfile,
+  getUserByEmail,
+} = require("./userRepository");
 
 const app = express();
 app.use(express.json());
@@ -18,42 +21,40 @@ const loadUsers = async function () {
   }
 };
 
-const validateUserAndGenerateToken = async function (
-  user_email,
-  user_password
-) {
+const userLogin = async function (user_email, user_password) {
+  console.log("email from SERVICE -> ", user_email);
+  console.log("password from SERVICE -> ", user_password);
+
   try {
-    const users = await getUsers();
-    const user = users.find((u) => u.user_email === user_email);
+    const data = await getUserByEmail(user_email);
+    console.log('DAATAAA ->>>> ', data);
 
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // Compare the hashed password
     const passwordMatch = await bcrypt.compare(
       user_password,
-      user.user_password
+      data.user_password
     );
+    
+    passwordMatch ? console.log('MATCH') : console.log('NO MATCH');
+    
+    
+
     if (!passwordMatch) {
       throw new Error("Invalid credentials");
     }
 
-    // Generate the token, embedding the user_id and user_email
     const token = jwt.sign(
-      { id: user.user_id, user_email: user.user_email },
+      { id: data.user_id, user_email: data.user_email },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-
+    
     return token;
   } catch (err) {
-    console.error("Error validating user", err);
-    throw err; // Re-throw to pass the error to the caller
+    console.error("Error getting user by the given email", err);
   }
 };
 
-const loadUserToDatabase = async function (user_email, user_password) {
+const insertUserInDB = async function (user_email, user_password) {
   try {
     if (!user_email || !user_password) {
       throw new Error("Username and user_password are required");
@@ -75,6 +76,6 @@ const loadUserToDatabase = async function (user_email, user_password) {
 
 module.exports = {
   loadUsers,
-  validateUserAndGenerateToken,
-  loadUserToDatabase,
+  insertUserInDB,
+  userLogin,
 };
