@@ -2,7 +2,6 @@ const express = require("express");
 const {
   loadAccountByName,
   loadAccountsWithUserId,
-  loadAccountTotalAmount,
 } = require("./AccountService");
 const authMiddleware = require("../user/authMiddleware");
 
@@ -43,23 +42,6 @@ router.get("/v1/account_by_name", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "error getting accounts" });
-  }
-});
-
-router.get("/v1/account_total_amount", authMiddleware, async (req, res) => {
-  try {
-    const user_id = req.user.id; // Extracting user_id from the decoded token
-    console.log('CONTROLLER -> ', user_id);
-    
-    const data = await loadAccountTotalAmount(user_id);
-    console.log(data);
-    
-    res.json(data);
-  } catch (err) {
-    console.error(err);
-    res
-      .status(500)
-      .json({ message: "Error getting selected user's total amount" });
   }
 });
 

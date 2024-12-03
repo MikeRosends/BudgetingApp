@@ -1,18 +1,18 @@
 require("dotenv").config();
 const express = require("express");
-const { getMovements, createMovement } = require("./movementRepository");
+const { createMovement, getMovementsByUserId, getUserTotalAmount } = require("./movementRepository");
 
 const app = express();
 app.use(express.json());
 
-const loadAccounts = async function () {
+const loadMovementsByUserId = async function (user_id) {
   try {
-    const data = await getMovements();
+    const data = await getMovementsByUserId(user_id);
     console.log("from service -> ", data);
 
     return data;
   } catch (err) {
-    console.error("Error loading movements -> ", err);
+    console.error("Error loading movements with user_id -> ", err);
   }
 };
 
@@ -54,7 +54,20 @@ const createNewMovement = async function (
   }
 };
 
+const loadUserTotalAmount = async function (user_id) {
+  console.log('SERVICE -> ', user_id);
+  
+  try {
+    const data = await getUserTotalAmount(user_id);
+    return data;
+  } catch (err) {
+    console.error(`Error loading total amount for selected user -> `, err);
+    
+  }
+}
+
 module.exports = {
-  loadAccounts,
   createNewMovement,
+  loadMovementsByUserId,
+  loadUserTotalAmount
 };

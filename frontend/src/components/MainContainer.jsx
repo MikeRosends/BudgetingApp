@@ -13,13 +13,15 @@ export const MainContainer = () => {
     const token = localStorage.getItem("token");
 
     axios
-      .get("http://localhost:8181/v1/account_total_amount", {
+      .get("http://localhost:8181/v1/user_total_amount", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        res.data < 0 ? setAccountAmount(res.data) : setAccountAmount(0);
+        res.data > 0 ? setAccountAmount(res.data) : setAccountAmount(0);
+        console.log(res.data);
+        
       });
   });
 
@@ -72,7 +74,7 @@ export const MainContainer = () => {
           <div className="card">
             <p>Account 1</p>
             <p className="card-amount">{accountAmount} €</p>
-            <Link to="/accounts">
+            <Link to="/movements">
               <button>
                 <p>Check Movements</p>
               </button>

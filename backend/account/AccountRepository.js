@@ -28,25 +28,7 @@ const findAccountByName = async function (accountName, user_id) {
   }
 };
 
-const getAccountTotalAmount = async function (user_id) {
-  console.log('REPO -> ', user_id);
-  
-  try {
-    const query = `
-    SELECT * FROM public.get_total_amount_per_user() WHERE user_id = $1
-    `;
-    const { rows } = await pgConnection.query(query, [user_id]);
-    console.log(rows[0].total_amount);
-    
-
-    return rows[0].total_amount;
-  } catch (err) {
-    console.error(`Error fetching total amount from selected user -> `, err);
-  }
-};
-
 module.exports = {
   findAccountByName,
   getAccountsWithUserId,
-  getAccountTotalAmount,
 };
