@@ -17,9 +17,8 @@ const getMovements = async function () {
 const createMovement = async function (
   amount,
   movement_date,
-  movement_type_code,
-  movement_type_name,
-  user_id_id,
+  category_code,
+  user_id,
   description,
   movement_name
 ) {
@@ -27,34 +26,31 @@ const createMovement = async function (
     "VALUES RECEIVED in repo >>>>",
     amount,
     movement_date,
-    movement_type_code,
-    movement_type_name,
-    user_id_id,
+    category_code,
+    user_id,
     description,
     movement_name
   );
 
   const query = `
   INSERT
-  INTO "movement_v2"(
+  INTO "movements"(
     "amount",
     "movement_date",
-    "movement_type_code",
-    "movement_type_name",
-    "user_id_id",
+    "category_code",
+    "user_id",
     "description",
     "movement_name"
     )
-  VALUES($1, $2, $3, $4, $5, $6, $7)
+  VALUES($1, $2, $3, $4, $5, $6)
   RETURNING *;`; // RETURNING * to get the inserted row(s)
 
   try {
     const { rows } = await pgConnection.query(query, [
       amount,
       movement_date,
-      movement_type_code,
-      movement_type_name,
-      user_id_id,
+      category_code,
+      user_id,
       description,
       movement_name,
     ]);
@@ -66,10 +62,73 @@ const createMovement = async function (
   }
 };
 
+const deleteMovement = async function (id) {
+  console.log("Deleting movement with id:", id);
+
+  const query = `
+  DELETE FROM "movements"
+  WHERE "id" = $1
+  RETURNING *;`; // RETURNING * to get details of the deleted row(s)
+
+  try {
+    const { rows } = await pgConnection.query(query, [id]);
+
+    if (!rows.length) {
+      throw new Error(`No movement found with id ${id}`);
+    }
+
+    return rows[0]; // Return the deleted movement's details
+  } catch (err) {
+    console.error("Error deleting movement -> ", err);
+    throw new Error("Database delete movement query failed");
+  }
+};
+
+const updateMovement = async function (
+  id,
+  { amount, movement_date, category_code, user_id, description, movement_name }
+) {
+  console.log("Updating movement with id:", id);
+
+  const query = `
+  UPDATE "movements"
+  SET
+    "amount" = COALESCE($2, "amount"),
+    "movement_date" = COALESCE($3, "movement_date"),
+    "category_code" = COALESCE($4, "category_code"),
+    "user_id" = COALESCE($5, "user_id"),
+    "description" = COALESCE($6, "description"),
+    "movement_name" = COALESCE($7, "movement_name")
+  WHERE "id" = $1
+  RETURNING *;`;
+
+  try {
+    const { rows } = await pgConnection.query(query, [
+      id,
+      amount,
+      movement_date,
+      category_code,
+      user_id,
+      description,
+      movement_name,
+    ]);
+
+    if (!rows.length) {
+      throw new Error(`No movement found with id ${id}`);
+    }
+
+    return rows[0]; // Return the updated movement's details
+  } catch (err) {
+    console.error("Error updating movement -> ", err);
+    throw new Error("Database update movement query failed");
+  }
+};
+
 const getMovementsByUserId = async function (user_id) {
   try {
     const query = `
-    SELECT * FROM movement_v2 WHERE user_id = $1
+    SELECT * FROM movement_v2 WHERE user_id = $1 
+ORDER BY movement_date DESC 
     `;
 
     const { rows } = await pgConnection.query(query, [user_id]);
@@ -98,15 +157,12 @@ const findAccountByName = async function (accountName, user_id) {
 };
 
 const getUserTotalAmount = async function (user_id) {
-  console.log('REPO -> ', user_id);
-  
   try {
     const query = `
     SELECT * FROM public.get_total_amount_per_user() WHERE user_id = $1
     `;
     const { rows } = await pgConnection.query(query, [user_id]);
     console.log(rows[0].total_amount);
-    
 
     return rows[0].total_amount;
   } catch (err) {
@@ -114,4 +170,34 @@ const getUserTotalAmount = async function (user_id) {
   }
 };
 
-module.exports = { getMovements, createMovement, getMovementsByUserId, getUserTotalAmount };
+const getMovementCategories = async () => {
+  console.log("Movement Repository");
+  const query = `
+        SELECT DISTINCT
+            category,
+            subcategory,
+            code
+        FROM 
+            public.movement_types
+        ORDER BY
+            category ASC
+      `;
+
+  try {
+    const { rows } = await pgConnection.query(query);
+
+    return rows;
+  } catch (err) {
+    console.error("Error getting movement categories", err);
+  }
+};
+
+module.exports = {
+  getMovements,
+  createMovement,
+  getMovementsByUserId,
+  getUserTotalAmount,
+  getMovementCategories,
+  deleteMovement,
+  updateMovement
+};

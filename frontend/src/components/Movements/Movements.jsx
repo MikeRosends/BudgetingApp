@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import Sidebar from "./Sidebar";
+import NavbarComponent from "../NavbarComponent/NavbarComponent";
 import axios from "axios";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import format from "date-fns/format";
 import { jwtDecode } from "jwt-decode";
+import "./Movements.css";
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
@@ -38,9 +39,9 @@ export default function Movements() {
   }, []);
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <div className="w-screen">
+    <div className="maindiv">
+      <NavbarComponent />
+      <div>
         <DataTable value={movementsArr} tableStyle={{ width: "50rem" }}>
           <Column field="amount" header="Amount"></Column>
           <Column
@@ -50,19 +51,10 @@ export default function Movements() {
           ></Column>
           <Column field="movement_name" header="Name"></Column>
           <Column
-            field="movement_type_name"
-            header="Movement Type"
-            body={(rowData) => {
-              console.log(rowData.movement_type_name);
-              
-              return rowData.movement_type_name === 'withdrawal' ? '🔻' : "🔼";
-            }}
-          ></Column>
-          <Column
             field="description"
             header="Description"
             body={(rowData) => {
-              return rowData.length > 0 ? rowData : "N/A";
+              return rowData.description ? rowData.description : "N/A";
             }}
           ></Column>
         </DataTable>

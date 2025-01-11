@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Sidebar from "./Sidebar";
+import NavbarComponent from "../components/NavbarComponent/NavbarComponent";
 import axios from "axios";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -46,7 +46,7 @@ export default function Accounts() {
 
   return (
     <div className="flex">
-      <Sidebar />
+      <NavbarComponent />
       <div className="w-screen">
         <DataTable value={accountsArr} tableStyle={{ width: "50rem" }}>
           <Column

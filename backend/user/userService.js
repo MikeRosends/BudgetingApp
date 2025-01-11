@@ -11,6 +11,8 @@ const app = express();
 app.use(express.json());
 
 const loadUsers = async function () {
+  console.log('calling loadUsers');
+  
   try {
     const data = await getUsers();
     console.log("from service -> ", data);
@@ -45,7 +47,7 @@ const userLogin = async function (user_email, user_password) {
     const token = jwt.sign(
       { id: data.user_id, user_email: data.user_email },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "3h" }
     );
     
     return token;

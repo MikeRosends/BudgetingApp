@@ -1,8 +1,9 @@
 const pgConnection = require("../secrets/dbConnections");
 
 const getUserByEmail = async function (user_email, user_password) {
+  console.log('calling getUserByEmail');
+  
   const query = `SELECT * FROM public._user_profiles WHERE user_email  = $1`;
-  console.log("REPO -> ", user_email);
 
   try {
     const { rows } = await pgConnection.query(query, [user_email]);

@@ -2,12 +2,13 @@ import { React, useEffect, useState } from "react";
 import "./MainContainer.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { Button } from "primereact/button";
+import NewMovementDialog from "../NewMovementDialog/NewMovementDialog";
 
-// https://codepen.io/aybukeceylan/pen/OJRNbZp - inspiration
-
-export const MainContainer = () => {
+export default function MainContainer() {
   const [message, setMessage] = useState("");
   const [accountAmount, setAccountAmount] = useState(0);
+  const [dialogVisible, setDialogVisible] = useState(false); // Control dialog visibility
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -19,13 +20,10 @@ export const MainContainer = () => {
         },
       })
       .then((res) => {
-        res.data > 0 ? setAccountAmount(res.data) : setAccountAmount(0);
-        console.log(res.data);
-        
+        setAccountAmount(res.data > 0 ? res.data : 0);
       });
-  });
+  }, []); // Added empty dependency array to avoid infinite loop
 
-  // Function to test the protected route
   const handleTestProtectedRoute = async () => {
     const token = localStorage.getItem("token");
     try {
@@ -36,10 +34,7 @@ export const MainContainer = () => {
       });
       setMessage(`Protected Route Response: ${JSON.stringify(res.data)}`);
     } catch (err) {
-      console.error(err);
-      setMessage(
-        err.response?.data?.message || "Failed to access protected route"
-      );
+      setMessage(err.response?.data?.message || "Failed to access protected route");
     }
   };
 
@@ -47,33 +42,19 @@ export const MainContainer = () => {
     <div className="main-container">
       <div className="header">
         <p className="header-title">Miguel Rosendo</p>
-        <p className="header-date">
-          21<sup>st</sup> of november
-        </p>
+        <p className="header-date">21<sup>st</sup> of November</p>
       </div>
-      {/* Button to test the protected route */}
-      <button type="button" onClick={handleTestProtectedRoute}>
-        Test Protected Route
-      </button>
-      <div className="main-stats">
+
+      <div className="first-container">
         <div className="individual-stat">
-          <h2>45</h2>
-          <p>In progress</p>
-        </div>
-        <div className="individual-stat">
-          <h2>15</h2>
-          <p>Upcoming</p>
-        </div>
-        <div className="individual-stat">
-          <h2>60</h2>
-          <p>Total projects</p>
+          <h2 className="card-amount">{accountAmount} €</h2>
+          <p>balance</p>
         </div>
       </div>
-      <div className="cards-container">
+
+      <div className="second-container">
         <div className="card-row">
           <div className="card">
-            <p>Account 1</p>
-            <p className="card-amount">{accountAmount} €</p>
             <Link to="/movements">
               <button>
                 <p>Check Movements</p>
@@ -81,14 +62,20 @@ export const MainContainer = () => {
             </Link>
           </div>
           <div className="card">
-            <p>Account 2</p>
-            <p className="card-amount">345 €</p>
-            <button>
-              <p>Check Movements</p>
-            </button>
+            <Button 
+              id="new-movement" 
+              onClick={() => setDialogVisible(true)}
+            >
+              <p>+ New Movement</p>
+            </Button>
           </div>
         </div>
       </div>
+
+      <NewMovementDialog 
+        visible={dialogVisible} 
+        setVisible={setDialogVisible} 
+      />
     </div>
   );
-};
+}

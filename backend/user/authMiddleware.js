@@ -18,7 +18,6 @@ module.exports = (req, res, next) => {
 
   try {
     const data = jwt.verify(token, jwtSecret);
-    console.log("Decoded Token Data:", data); // Log token data
     req.user = data; // Attach user data (including user_id) to the request
     next();
   } catch (err) {

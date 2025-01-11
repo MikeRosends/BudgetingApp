@@ -2,7 +2,7 @@
     margin: 20px;
     padding: 10px;
     width: 100vh;
-    background-color: rgb(247, 247, 247);
+    background-color: rgb(37, 37, 37);
     border-radius: 30px;
 }
 
@@ -21,28 +21,27 @@
     font-size: 25px;
 }
 
-.main-stats {
+.first-container {
+    width: 100%;
     display: flex;
-    padding: 0 5vh;
+    justify-content: center;
+    align-items: center;
     margin: 20px 0;
 }
 
 .individual-stat {
+    width: 200px;
+    text-align: center;
+    border-radius: 20px;
     padding-right: 5vh;
+    padding: 20px 40px;
+    background-color: rgb(27, 27, 27);
+    box-shadow: 7px 7px 40px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);
 }
 
-.individual-stat h2{
-    font-size: 25px;
-    font-weight: bold;
-}
-
-.individual-stat p{
-    font-size: small;
-}
-
-.cards-container {
+.second-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; 
 }
 
 .card-row {
@@ -71,11 +70,22 @@
 }
 
 .card button {
-    background-color: #49ded7;
-    height: 40px;
+    border: 3px solid white;
+    font-weight: 700;
+    height: 50px;
+    line-height: 45px;
     color: white;
     border-radius: 15px;
-    padding: 5px 15px;
+    padding: 0 20px;
+    text-align: center;
     text-wrap: nowrap;
     box-shadow: 7px 7px 20px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);    
+}
+
+#new-movement {
+    color: rgb(27, 27, 27);
+    text-align: center;
+    padding: 0 15px 0 10px;
+    border: 3px solid rgb(27, 27, 27);
+    background-color: rgb(255, 255, 255);
 }

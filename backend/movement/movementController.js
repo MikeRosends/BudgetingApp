@@ -3,6 +3,9 @@ const {
   createNewMovement,
   loadMovementsByUserId,
   loadUserTotalAmount,
+  loadMovementCategories,
+  deleteExistingMovement,
+  updateExistingMovement
 } = require("./movementService");
 const authMiddleware = require("../user/authMiddleware");
 
@@ -33,20 +36,20 @@ router.post("/v1/new_movment", async (req, res) => {
   const {
     amount,
     movement_date,
-    movement_type_code,
-    movement_type_name,
-    user_id_id,
+    category_code,
+    user_id,
     description,
     movement_name,
   } = req.body;
 
+  console.log("NEW MOVEMENT POST WAS CALLED");
+
   console.log(
-    "VALUES RECEIVED in controller >>>>",
+    "DATA RECEIVED IN CONTROLLER: ",
     amount,
     movement_date,
-    movement_type_code,
-    movement_type_name,
-    user_id_id,
+    category_code,
+    user_id,
     description,
     movement_name
   );
@@ -55,9 +58,8 @@ router.post("/v1/new_movment", async (req, res) => {
     await createNewMovement(
       amount,
       movement_date,
-      movement_type_code,
-      movement_type_name,
-      user_id_id,
+      category_code,
+      user_id,
       description,
       movement_name
     );
@@ -68,13 +70,65 @@ router.post("/v1/new_movment", async (req, res) => {
   }
 });
 
+router.delete("/v1/movement/:id", async (req, res) => {
+  const { id } = req.params;
+
+  console.log("DELETE MOVEMENT WAS CALLED");
+  console.log("ID RECEIVED IN CONTROLLER: ", id);
+
+  try {
+    const result = await deleteExistingMovement(id);
+    res.status(200).json({ message: "Movement deleted successfully", data: result });
+  } catch (err) {
+    console.error("Error in DELETE /v1/movement/:id route", err);
+    res.status(500).json({ message: "Error deleting movement" });
+  }
+});
+
+router.put("/v1/movement/:id", async (req, res) => {
+  const { id } = req.params;
+  const {
+    amount,
+    movement_date,
+    category_code,
+    user_id,
+    description,
+    movement_name,
+  } = req.body;
+
+  console.log("UPDATE MOVEMENT WAS CALLED");
+  console.log("DATA RECEIVED IN CONTROLLER: ", {
+    id,
+    amount,
+    movement_date,
+    category_code,
+    user_id,
+    description,
+    movement_name,
+  });
+
+  try {
+    const result = await updateExistingMovement(id, {
+      amount,
+      movement_date,
+      category_code,
+      user_id,
+      description,
+      movement_name,
+    });
+    res.status(200).json({ message: "Movement updated successfully", data: result });
+  } catch (err) {
+    console.error("Error in PUT /v1/movement/:id route", err);
+    res.status(500).json({ message: "Error updating movement" });
+  }
+});
+
+
 router.get("/v1/user_total_amount", authMiddleware, async (req, res) => {
   try {
     const user_id = req.user.id; // Extracting user_id from the decoded token
-    console.log("CONTROLLER -> ", user_id);
 
     const data = await loadUserTotalAmount(user_id);
-    console.log(data);
 
     res.json(data);
   } catch (err) {
@@ -84,5 +138,18 @@ router.get("/v1/user_total_amount", authMiddleware, async (req, res) => {
       .json({ message: "Error getting selected user's total amount" });
   }
 });
+
+router.get('/v1/movement_categories', async (req, res) => {
+  console.log('Movement Controller');
+  
+  try {
+    const data = await loadMovementCategories();
+
+    res.status(200).json(data);
+  } catch (err) {
+    
+    res.status(500).json({ message: "Error getting categories" });
+  }
+})
 
 module.exports = router;
