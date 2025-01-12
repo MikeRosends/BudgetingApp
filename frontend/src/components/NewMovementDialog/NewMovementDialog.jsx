@@ -9,53 +9,88 @@ import { InputNumber } from "primereact/inputnumber";
 import { Dropdown } from "primereact/dropdown";
 import "./NewMovementDialog.css";
 import { jwtDecode } from "jwt-decode";
-import { longFormatters } from "date-fns";
 
 export default function NewMovementDialog({ visible, setVisible }) {
   const navigate = useNavigate();
 
+  // Form State
   const [date, setDate] = useState(null);
   const [amount, setAmount] = useState(null);
   const [categoryCode, setCategoryCode] = useState(null);
-  const [categoryName, setCategoryName] = useState(null);
   const [movementDate, setMovementDate] = useState(null);
   const [description, setDescription] = useState(null);
   const [movementName, setMovementName] = useState(null);
 
-  const [groupedCategories, setGroupedCategories] = useState([]);
-  const [selectedMovementCategory, setSelectedMovementCategory] =
-    useState(null);
-
-  const [movementSubCategories, setMovementSubCategories] = useState([]);
-  const [selectedMovementSubCategory, setSelectedMovementSubCategory] =
-    useState(null);
+  // Category State
+  const [mainCategories, setMainCategories] = useState([]);
+  const [selectedMainCategory, setSelectedMainCategory] = useState(null);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
 
   useEffect(() => {
-    console.log("calling useEffect");
+    console.log("Fetching main categories...");
 
     axios
-      .get("http://localhost:8181/v1/movement_categories")
-      .then((categories) => {
-        setGroupedCategories(categories.data);
-        console.log("CATEGORIES -> ", categories.data);
+      .get("http://localhost:8181/v1/categories/main")
+      .then((response) => {
+        setMainCategories(response.data);
+        console.log("Main Categories -> ", response.data);
       })
       .catch((err) => {
-        console.error("Error getting movement categories", err);
+        console.error("Error fetching main categories", err);
       });
   }, []);
 
-  const handleSubmit = (e) => {
+  // Fetch subcategories when a main category is selected
+  const handleMainCategoryChange = (category) => {
+    setSelectedMainCategory(category);
+    setSelectedSubcategory(null); // Reset subcategory when changing main category
+
+    axios
+      .get(`http://localhost:8181/v1/categories/subcategories/${category}`)
+      .then((response) => {
+        setSubcategories(response.data);
+        console.log("Subcategories -> ", response.data);
+      })
+      .catch((err) => {
+        console.error("Error fetching subcategories", err);
+      });
+  };
+
+  const resetFormFields = () => {
+    setDate(null);
+    setAmount(null);
+    setCategoryCode(null);
+    setMovementDate(null);
+    setDescription(null);
+    setMovementName(null);
+    setSelectedMainCategory(null);
+    setSubcategories([]); // Clear subcategories when resetting
+    setSelectedSubcategory(null);
+  };
+
+  const handleSubmit = () => {
     const token = localStorage.getItem("token");
 
     if (token) {
       const decodedToken = jwtDecode(token);
       const userId = decodedToken.id;
 
+      if (
+        !amount ||
+        !movementDate ||
+        !selectedMainCategory ||
+        !selectedSubcategory
+      ) {
+        alert("Please fill all the required fields.");
+        return;
+      }
+
       axios
         .post("http://localhost:8181/v1/new_movment", {
           amount: amount,
           movement_date: movementDate,
-          category_code: categoryCode,
+          category_code: selectedSubcategory.category_code, // Correct way to access the category_code
           user_id: userId,
           description: description,
           movement_name: movementName,
@@ -64,25 +99,22 @@ export default function NewMovementDialog({ visible, setVisible }) {
           navigate("/dashboard");
         })
         .catch((err) => {
-          console.error("Error creating new movemet -> ", err);
+          console.error("Error creating new movement -> ", err);
         });
     }
+    resetFormFields();
   };
 
   return (
     <Dialog
       visible={visible}
       modal
-      onHide={() => setVisible(false)} // triggered when clicking outside or pressing "X"
+      onHide={() => {
+        resetFormFields(); // Reset form when dialog closes
+        setVisible(false);
+      }}
     >
-      <div
-        className="dialog-container"
-        style={{
-          borderRadius: "12px",
-          backgroundImage:
-            "radial-gradient(circle at left top, var(--primary-400), var(--primary-700))",
-        }}
-      >
+      <div className="dialog-container">
         <div className="secondary-dialog-container">
           <div className="single-input-container">
             <label htmlFor="amount" className="text-primary-50 font-semibold">
@@ -94,11 +126,11 @@ export default function NewMovementDialog({ visible, setVisible }) {
               mode="currency"
               currency="EUR"
               locale="pt-PT"
-              label="Amount"
               className="bg-white-alpha-20 border-none p-3 text-primary-50"
-            ></InputNumber>
+            />
           </div>
         </div>
+
         <div className="secondary-dialog-container">
           <div className="single-input-container">
             <label
@@ -109,42 +141,50 @@ export default function NewMovementDialog({ visible, setVisible }) {
             </label>
             <InputText
               id="movementName"
-              label="Mmovement Name"
               value={movementName}
               onChange={(e) => setMovementName(e.target.value)}
               className="bg-white-alpha-20 border-none p-3 text-primary-50"
-            ></InputText>
+            />
           </div>
           <div className="single-input-container">
             <label htmlFor="category" className="text-primary-50 font-semibold">
-              Category
+              Main Category
             </label>
             <Dropdown
-              value={selectedMovementCategory}
-              onChange={(e) => {
-                console.log(e.value);
-                
-                setSelectedCategoryCode(e.value)
-              }}
-              options={groupedCategories}
+              value={selectedMainCategory}
+              onChange={(e) => handleMainCategoryChange(e.value)}
+              options={mainCategories}
               optionLabel="category"
-              optionValue="category"
-              optionGroupLabel="category"
-              optionGroupChildren="subcategory"
-              optionGroupTemplate={(option) => (
-                <div className="flex align-items-center">
-                  <strong>{option.category}</strong>
-                </div>
-              )}
-              itemTemplate={(option) => (
-                <div className="flex align-items-center">
-                  <div>{option.label}</div> {/* Render subcategory label */}
-                </div>
-              )}
               className="bg-white-alpha-20 border-none p-3 text-primary-50"
-            ></Dropdown>
+              placeholder="Select Main Category"
+            />
           </div>
         </div>
+
+        <div className="secondary-dialog-container">
+          <div className="single-input-container">
+            <label
+              htmlFor="subcategory"
+              className="text-primary-50 font-semibold"
+            >
+              Subcategory
+            </label>
+            <Dropdown
+              value={selectedSubcategory}
+              onChange={(e) => {
+                setSelectedSubcategory(e.value);
+                console.log(e.value.category_code);
+                
+                setCategoryCode(e.value.category_code);
+              }}
+              options={subcategories}
+              optionLabel="subcategory"
+              className="bg-white-alpha-20 border-none p-3 text-primary-50"
+              placeholder="Select Subcategory"
+            />
+          </div>
+        </div>
+
         <div className="secondary-dialog-container">
           <div className="single-input-container">
             <label htmlFor="date" className="text-primary-50 font-semibold">
@@ -155,31 +195,34 @@ export default function NewMovementDialog({ visible, setVisible }) {
               onChange={(e) => setMovementDate(e.value)}
               showButtonBar
               className="bg-white-alpha-20 border-none p-3 text-primary-50"
-            ></Calendar>
+            />
           </div>
           <div className="single-input-container">
             <label
-              htmlFor="movementName"
+              htmlFor="description"
               className="text-primary-50 font-semibold"
             >
               Description
             </label>
             <InputText
               id="description"
-              label="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="bg-white-alpha-20 border-none p-3 text-primary-50"
-            ></InputText>
+            />
           </div>
         </div>
+
         <div className="dialog-btn-container flex align-items-center gap-2">
           <Button
             label="Cancel"
-            onClick={() => setVisible(false)}
+            onClick={() => {
+              resetFormFields();
+              setVisible(false);
+            }}
             text
             className="p-3 w-full text-primary-50 border-1 border-white-alpha-30 hover:bg-white-alpha-10"
-          ></Button>
+          />
           <Button
             label="+ Add"
             onClick={() => {
@@ -188,7 +231,7 @@ export default function NewMovementDialog({ visible, setVisible }) {
             }}
             text
             className="p-3 w-full text-primary-50 border-1 border-white-alpha-30 hover:bg-white-alpha-10"
-          ></Button>
+          />
         </div>
       </div>
     </Dialog>

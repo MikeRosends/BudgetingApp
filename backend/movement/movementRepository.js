@@ -170,34 +170,50 @@ const getUserTotalAmount = async function (user_id) {
   }
 };
 
-const getMovementCategories = async () => {
-  console.log("Movement Repository");
+const getMainCategories = async function () {
+  console.log("Fetching main categories from repository...");
   const query = `
-        SELECT DISTINCT
-            category,
-            subcategory,
-            code
-        FROM 
-            public.movement_types
-        ORDER BY
-            category ASC
-      `;
+    SELECT DISTINCT "category"
+    FROM "categories"
+    ORDER BY "category";
+  `;
 
   try {
     const { rows } = await pgConnection.query(query);
-
-    return rows;
+    return rows.map((row) => row.category); // Return array of main categories
   } catch (err) {
-    console.error("Error getting movement categories", err);
+    console.error("Error fetching main categories -> ", err);
+    throw new Error("Database query to fetch main categories failed");
   }
 };
+
+const getSubcategoriesByCategory = async function (mainCategory) {
+  console.log("Fetching subcategories for main category:", mainCategory);
+  const query = `
+    SELECT "subcategory", "category_code"
+    FROM "categories"
+    WHERE "category" = $1
+    ORDER BY "subcategory";
+  `;
+
+  try {
+    const { rows } = await pgConnection.query(query, [mainCategory]);
+    return rows;
+  } catch (err) {
+    console.error("Error fetching subcategories -> ", err);
+    throw new Error("Database query to fetch subcategories failed");
+  }
+};
+
+
 
 module.exports = {
   getMovements,
   createMovement,
   getMovementsByUserId,
   getUserTotalAmount,
-  getMovementCategories,
   deleteMovement,
-  updateMovement
+  updateMovement,
+  getMainCategories,
+  getSubcategoriesByCategory,
 };

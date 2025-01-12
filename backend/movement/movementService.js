@@ -4,9 +4,10 @@ const {
   createMovement,
   getMovementsByUserId,
   getUserTotalAmount,
-  getMovementCategories,
   deleteMovement,
-  updateMovement
+  updateMovement,
+  getMainCategories,
+  getSubcategoriesByCategory,
 } = require("./movementRepository");
 
 const app = express();
@@ -151,11 +152,37 @@ const loadMovementCategories = async () => {
   }
 };
 
+// Service function to get main categories
+const fetchMainCategories = async () => {
+  try {
+    const categories = await getMainCategories();
+    console.log("Fetched main categories:", categories);
+    return categories;
+  } catch (err) {
+    throw new Error("Error in service layer fetching main categories");
+  }
+};
+
+// Service function to get subcategories
+const fetchSubcategories = async (mainCategory) => {
+  try {
+    const subcategories = await getSubcategoriesByCategory(mainCategory);
+    console.log(`Fetched subcategories for ${mainCategory}:`, subcategories);
+    return subcategories; // Returns array of { subcategory, category_code }
+  } catch (err) {
+    console.error("Error in service layer fetching subcategories:", err);
+    throw new Error("Error in service layer fetching subcategories");
+  }
+};
+
+
 module.exports = {
   createNewMovement,
   loadMovementsByUserId,
   loadUserTotalAmount,
   loadMovementCategories,
   deleteExistingMovement,
-  updateExistingMovement
+  updateExistingMovement,
+  fetchMainCategories,
+  fetchSubcategories,
 };

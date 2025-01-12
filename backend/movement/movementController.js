@@ -5,7 +5,9 @@ const {
   loadUserTotalAmount,
   loadMovementCategories,
   deleteExistingMovement,
-  updateExistingMovement
+  updateExistingMovement,
+  fetchMainCategories,
+  fetchSubcategories,
 } = require("./movementService");
 const authMiddleware = require("../user/authMiddleware");
 
@@ -150,6 +152,28 @@ router.get('/v1/movement_categories', async (req, res) => {
     
     res.status(500).json({ message: "Error getting categories" });
   }
-})
+});
+
+// Route to get main categories
+router.get("/v1/categories/main", async (req, res) => {
+  try {
+    const mainCategories = await fetchMainCategories();
+    res.status(200).json(mainCategories);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching main categories" });
+  }
+});
+
+// Route to get subcategories for a main category
+router.get("/v1/categories/subcategories/:mainCategory", async (req, res) => {
+  const { mainCategory } = req.params;
+  try {
+    const subcategories = await fetchSubcategories(mainCategory);
+    res.status(200).json(subcategories);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching subcategories" });
+  }
+});
+
 
 module.exports = router;
