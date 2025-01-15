@@ -124,6 +124,7 @@ export default function NewMovementDialog({
     <Dialog
       visible={visible}
       modal
+      header={type === 1 ? "New Deposit" : "New Expense"} // Header Title based on type
       onHide={() => {
         resetFormFields();
         setVisible(false);

@@ -5,6 +5,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import format from "date-fns/format";
 import { jwtDecode } from "jwt-decode";
+import { InputText } from "primereact/inputtext"; // Import for search input
 import EditDialog from "../DialogBoxes/EditDialog";
 import DeleteDialog from "../DialogBoxes/DeleteDialog";
 import "./Movements.css";
@@ -17,6 +18,10 @@ export default function Movements() {
   const [selectedMovement, setSelectedMovement] = useState(null);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
+  const [globalFilterValue, setGlobalFilterValue] = useState(""); // Global filter state
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: "contains" },
+  });
 
   const fetchMovements = () => {
     const token = localStorage.getItem("token");
@@ -54,6 +59,31 @@ export default function Movements() {
     setIsDeleteDialogVisible(true);
   };
 
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+
+  const renderHeader = () => {
+    return (
+      <div className="flex justify-content-between align-items-center">
+        <h2>Movements</h2>
+        <div className="p-input-icon-left">
+          <i className="pi pi-search" />
+          <InputText
+            value={globalFilterValue}
+            onChange={onGlobalFilterChange}
+            placeholder="Global Search"
+            style={{ width: "200px" }}
+          />
+        </div>
+      </div>
+    );
+  };
+
   const categoryTemplate = (rowData) => {
     return `${rowData.category || "Unknown"} > ${rowData.subcategory || "N/A"}`;
   };
@@ -85,11 +115,27 @@ export default function Movements() {
     );
   };
 
+  const header = renderHeader(); // Render the header with global search
+
   return (
     <div className="maindiv">
       <NavbarComponent />
       <div>
-        <DataTable value={movementsArr} tableStyle={{ width: "70rem" }}>
+        <DataTable
+          value={movementsArr}
+          paginator
+          rows={50}
+          dataKey="id"
+          tableStyle={{ width: "70rem" }}
+          globalFilterFields={[
+            "movement_name",
+            "description",
+            "amount",
+            "movement_date",
+          ]}
+          filters={filters}
+          header={header}
+        >
           <Column body={statusTemplate} style={{ width: "3rem" }}></Column>
           <Column field="amount" header="Amount"></Column>
           <Column

@@ -21,7 +21,8 @@ export default function MainContainer() {
         },
       })
       .then((res) => {
-        setAccountAmount(res.data.totalAmount);
+        // Format the total amount to two decimal places
+        setAccountAmount(parseFloat(res.data.totalAmount).toFixed(2));
       });
   }, []);
 
@@ -39,7 +40,8 @@ export default function MainContainer() {
 
       <div className="first-container">
         <div className="individual-stat">
-          <h2 className="card-amount">{accountAmount} €</h2>
+          {/* Ensure consistent formatting */}
+          <h2 className="card-amount">{`${accountAmount} €`}</h2>
           <p>balance</p>
         </div>
       </div>
