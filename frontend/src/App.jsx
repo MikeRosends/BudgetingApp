@@ -6,7 +6,7 @@ import Accounts from "./components/Accounts";
 import Movements from "./components/Movements/Movements";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import NewMovementDialog from "./components/NewMovementDialog/NewMovementDialog"
+import NewMovementDialog from "./components/DialogBoxes/NewMovementDialog"
 
 function App() {
   return (

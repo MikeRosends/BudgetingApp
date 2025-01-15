@@ -3,12 +3,13 @@ import "./MainContainer.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Button } from "primereact/button";
-import NewMovementDialog from "../NewMovementDialog/NewMovementDialog";
+import NewMovementDialog from "../DialogBoxes/NewMovementDialog";
 
 export default function MainContainer() {
   const [message, setMessage] = useState("");
   const [accountAmount, setAccountAmount] = useState(0);
-  const [dialogVisible, setDialogVisible] = useState(false); // Control dialog visibility
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [movementType, setMovementType] = useState(1); // To store deposit (1) or expense (-1)
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -20,22 +21,13 @@ export default function MainContainer() {
         },
       })
       .then((res) => {
-        setAccountAmount(res.data > 0 ? res.data : 0);
+        setAccountAmount(res.data.totalAmount);
       });
-  }, []); // Added empty dependency array to avoid infinite loop
+  }, []);
 
-  const handleTestProtectedRoute = async () => {
-    const token = localStorage.getItem("token");
-    try {
-      const res = await axios.get("http://localhost:8181/v1/test", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setMessage(`Protected Route Response: ${JSON.stringify(res.data)}`);
-    } catch (err) {
-      setMessage(err.response?.data?.message || "Failed to access protected route");
-    }
+  const openNewMovementDialog = (type) => {
+    setMovementType(type); // Set type when opening the dialog
+    setDialogVisible(true);
   };
 
   return (
@@ -62,19 +54,30 @@ export default function MainContainer() {
             </Link>
           </div>
           <div className="card">
-            <Button 
-              id="new-movement" 
-              onClick={() => setDialogVisible(true)}
+            <Button
+              id="add-deposit"
+              className="p-button-success"
+              onClick={() => openNewMovementDialog(1)} // Deposit
             >
-              <p>+ New Movement</p>
+              <p>+ Add Deposit</p>
+            </Button>
+          </div>
+          <div className="card">
+            <Button
+              id="add-expense"
+              className="p-button-danger"
+              onClick={() => openNewMovementDialog(-1)} // Expense
+            >
+              <p>+ Add Expense</p>
             </Button>
           </div>
         </div>
       </div>
 
-      <NewMovementDialog 
-        visible={dialogVisible} 
-        setVisible={setDialogVisible} 
+      <NewMovementDialog
+        visible={dialogVisible}
+        setVisible={setDialogVisible}
+        defaultType={movementType} // Pass type (1 or -1)
       />
     </div>
   );

@@ -1,0 +1,124 @@
+.dialog-container {
+    padding: 1.5rem;
+    background-color: #2b2b2b; /* Dark background */
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #f5f5f5; /* Light text for contrast */
+  }
+  
+  .dialog-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #f5f5f5;
+  }
+  
+  .form-group,
+  .single-input-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+  }
+  
+  label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #f0f0f0; /* Light label color */
+  }
+  
+  .p-inputtext,
+  .p-calendar,
+  .p-inputnumber,
+  .p-dropdown {
+    padding: 0.6rem;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background-color: #3d3d3d; /* Darker background for inputs */
+    color: #fff;
+    box-shadow: none;
+  }
+  
+  .p-inputtext:focus,
+  .p-calendar:focus,
+  .p-inputnumber:focus,
+  .p-dropdown:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 6px rgba(74, 144, 226, 0.6);
+    outline: none;
+  }
+  
+  .dialog-btn-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  
+  button,
+  .p-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-cancel,
+  .p-button-text {
+    background-color: #555;
+    color: #f0f0f0;
+    border: 1px solid #666;
+  }
+  
+  .btn-cancel:hover,
+  .p-button-text:hover {
+    background-color: #666;
+    color: #fff;
+  }
+  
+  .btn-save,
+  .p-button-primary {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .btn-save:hover,
+  .p-button-primary:hover {
+    background-color: #218838;
+  }
+  
+  .btn-delete {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .btn-delete:hover {
+    background-color: #b21f2d;
+  }
+  
+  /* Darker modal background */
+  .p-dialog .p-dialog-header {
+    background-color: #2c2c2c;
+    border-bottom: 1px solid #444;
+  }
+  
+  .p-dialog .p-dialog-content {
+    background-color: #2b2b2b;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .dialog-container {
+      padding: 1rem;
+    }
+  
+    .dialog-btn-container {
+      flex-direction: column;
+    }
+  
+    button,
+    .p-button {
+      width: 100%;
+    }
+  }

@@ -1,17 +1,15 @@
 const { query } = require("express");
 const pgConnection = require("../secrets/dbConnections");
 
-const getMovements = async function () {
+const getMovementsForUser = async (user_id) => {
   const query = `
-  SELECT * FROM public.movement;
+    SELECT user_id, amount, category_code, type
+    FROM public.movements
+    WHERE user_id = $1
+    ORDER BY id ASC;
   `;
-  try {
-    const { rows } = await pgConnection.query(query);
-
-    return rows;
-  } catch (err) {
-    console.error("Error fetching movements", err);
-  }
+  const { rows } = await pgConnection.query(query, [user_id]);
+  return rows;
 };
 
 const createMovement = async function (
@@ -20,7 +18,8 @@ const createMovement = async function (
   category_code,
   user_id,
   description,
-  movement_name
+  movement_name,
+  type
 ) {
   console.log(
     "VALUES RECEIVED in repo >>>>",
@@ -29,7 +28,8 @@ const createMovement = async function (
     category_code,
     user_id,
     description,
-    movement_name
+    movement_name,
+    type
   );
 
   const query = `
@@ -40,9 +40,10 @@ const createMovement = async function (
     "category_code",
     "user_id",
     "description",
-    "movement_name"
+    "movement_name",
+    "type"
     )
-  VALUES($1, $2, $3, $4, $5, $6)
+  VALUES($1, $2, $3, $4, $5, $6, $7)
   RETURNING *;`; // RETURNING * to get the inserted row(s)
 
   try {
@@ -53,6 +54,7 @@ const createMovement = async function (
       user_id,
       description,
       movement_name,
+      type
     ]);
 
     return rows[0];
@@ -127,8 +129,8 @@ const updateMovement = async function (
 const getMovementsByUserId = async function (user_id) {
   try {
     const query = `
-    SELECT * FROM movement_v2 WHERE user_id = $1 
-ORDER BY movement_date DESC 
+    SELECT * FROM movements WHERE user_id = $1
+    ORDER BY movement_date DESC, id DESC;
     `;
 
     const { rows } = await pgConnection.query(query, [user_id]);
@@ -138,35 +140,6 @@ ORDER BY movement_date DESC
     return rows;
   } catch (err) {
     console.error("Error fetching movements", err);
-  }
-};
-
-const findAccountByName = async function (accountName, user_id) {
-  try {
-    const query = `
-    SELECT account_id, account_creation_date, account_name, amount, user_id
-    FROM public._account
-    WHERE account_name = $1 AND user_id = $2;
-    `;
-    const { rows } = await pgConnection.query(query, [accountName, user_id]);
-
-    return rows;
-  } catch (err) {
-    console.error("Error fetching account by name", err);
-  }
-};
-
-const getUserTotalAmount = async function (user_id) {
-  try {
-    const query = `
-    SELECT * FROM public.get_total_amount_per_user() WHERE user_id = $1
-    `;
-    const { rows } = await pgConnection.query(query, [user_id]);
-    console.log(rows[0].total_amount);
-
-    return rows[0].total_amount;
-  } catch (err) {
-    console.error(`Error fetching total amount from selected user -> `, err);
   }
 };
 
@@ -205,15 +178,29 @@ const getSubcategoriesByCategory = async function (mainCategory) {
   }
 };
 
+const getAllCategories = async () => {
+  try {
+    const query = `
+      SELECT "category_code", "category", "subcategory"
+      FROM "categories";
+    `;
+    const { rows } = await pgConnection.query(query);
+    return rows;
+  } catch (err) {
+    console.error("Error fetching categories:", err);
+    throw new Error("Error fetching categories");
+  }
+};
+
 
 
 module.exports = {
-  getMovements,
+  getMovementsForUser,
   createMovement,
   getMovementsByUserId,
-  getUserTotalAmount,
   deleteMovement,
   updateMovement,
   getMainCategories,
   getSubcategoriesByCategory,
+  getAllCategories,
 };

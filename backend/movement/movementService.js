@@ -1,28 +1,70 @@
 require("dotenv").config();
 const express = require("express");
 const {
+  getMovementsForUser,
   createMovement,
   getMovementsByUserId,
-  getUserTotalAmount,
   deleteMovement,
   updateMovement,
   getMainCategories,
   getSubcategoriesByCategory,
+  getAllCategories,
 } = require("./movementRepository");
 
 const app = express();
 app.use(express.json());
 
+const getTotalAmountForUser = async (user_id) => {
+  try {
+    const movements = await getMovementsForUser(user_id); // Get movements with "type" directly
+
+    // Calculate the total directly using the "type" from movements table
+    const totalAmount = movements.reduce((sum, movement) => {
+      return sum + movement.amount * movement.type; // Multiply amount by type (1 for deposit, -1 for expense)
+    }, 0);
+
+    return totalAmount;
+  } catch (err) {
+    console.error("Error in getTotalAmountForUser service", err);
+    throw new Error("Failed to calculate total amount");
+  }
+};
+
+
 const loadMovementsByUserId = async function (user_id) {
   try {
-    const data = await getMovementsByUserId(user_id);
-    console.log("from service -> ", data);
+    // Fetch movements
+    const movements = await getMovementsByUserId(user_id);
 
-    return data;
+    // Fetch all categories once to avoid multiple DB calls
+    const categories = await getAllCategories(); // A new service function to fetch all categories
+
+    // Map categories for quick access
+    const categoryMap = categories.reduce((map, category) => {
+      map[category.category_code] = {
+        category: category.category,
+        subcategory: category.subcategory,
+      };
+      return map;
+    }, {});
+
+    // Enrich movements with category and subcategory names
+    const enrichedMovements = movements.map((movement) => {
+      const categoryData = categoryMap[movement.category_code] || {};
+      return {
+        ...movement,
+        category: categoryData.category || "Unknown",
+        subcategory: categoryData.subcategory || "N/A",
+      };
+    });
+
+    console.log("Enriched Movements:", enrichedMovements);
+    return enrichedMovements;
   } catch (err) {
     console.error("Error loading movements with user_id -> ", err);
   }
 };
+
 
 const createNewMovement = async function (
   amount,
@@ -30,7 +72,8 @@ const createNewMovement = async function (
   category_code,
   user_id,
   description,
-  movement_name
+  movement_name,
+  type
 ) {
   console.log(
     "VALUES RECEIVED in service >>>>",
@@ -39,7 +82,8 @@ const createNewMovement = async function (
     category_code,
     user_id,
     description,
-    movement_name
+    movement_name,
+    type
   );
   try {
     const result = await createMovement(
@@ -48,7 +92,8 @@ const createNewMovement = async function (
       category_code,
       user_id,
       description,
-      movement_name
+      movement_name,
+      type
     );
 
     console.log("Service success!!");
@@ -102,8 +147,6 @@ const updateExistingMovement = async function (
   }
 };
 
-
-
 const loadUserTotalAmount = async function (user_id) {
   try {
     const data = await getUserTotalAmount(user_id);
@@ -146,7 +189,6 @@ const loadMovementCategories = async () => {
     const groupedData = groupByCategory(data);
 
     return transformedData(groupedData);
-
   } catch (err) {
     console.error("Error loading movement categories", err);
   }
@@ -175,8 +217,8 @@ const fetchSubcategories = async (mainCategory) => {
   }
 };
 
-
 module.exports = {
+  getTotalAmountForUser,
   createNewMovement,
   loadMovementsByUserId,
   loadUserTotalAmount,

@@ -5,6 +5,8 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import format from "date-fns/format";
 import { jwtDecode } from "jwt-decode";
+import EditDialog from "../DialogBoxes/EditDialog";
+import DeleteDialog from "../DialogBoxes/DeleteDialog";
 import "./Movements.css";
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
@@ -12,8 +14,11 @@ import "primeicons/primeicons.css";
 
 export default function Movements() {
   const [movementsArr, setMovementsArr] = useState([]);
+  const [selectedMovement, setSelectedMovement] = useState(null);
+  const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
+  const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
 
-  useEffect(() => {
+  const fetchMovements = () => {
     const token = localStorage.getItem("token");
 
     if (token) {
@@ -25,10 +30,7 @@ export default function Movements() {
           params: { user_id: userId },
         })
         .then((response) => {
-          const data = response.data;
-          console.log(data);
-
-          setMovementsArr(data);
+          setMovementsArr(response.data);
         })
         .catch((err) => {
           console.error("Error fetching movements", err);
@@ -36,29 +38,92 @@ export default function Movements() {
     } else {
       console.error("Token not found");
     }
+  };
+
+  useEffect(() => {
+    fetchMovements(); // Fetch movements when the component mounts
   }, []);
+
+  const handleEdit = (movement) => {
+    setSelectedMovement(movement);
+    setIsEditDialogVisible(true);
+  };
+
+  const handleDelete = (movement) => {
+    setSelectedMovement(movement);
+    setIsDeleteDialogVisible(true);
+  };
+
+  const categoryTemplate = (rowData) => {
+    return `${rowData.category || "Unknown"} > ${rowData.subcategory || "N/A"}`;
+  };
+
+  const actionsTemplate = (rowData) => {
+    return (
+      <div className="flex gap-2">
+        <button className="btn-edit" onClick={() => handleEdit(rowData)}>
+          Edit
+        </button>
+        <button className="btn-delete" onClick={() => handleDelete(rowData)}>
+          Delete
+        </button>
+      </div>
+    );
+  };
+
+  const statusTemplate = (rowData) => {
+    return rowData.type === 1 ? (
+      <i
+        className="pi pi-arrow-up text-green-500"
+        style={{ fontSize: "1.5rem" }}
+      ></i> // Deposit
+    ) : (
+      <i
+        className="pi pi-arrow-down text-red-500"
+        style={{ fontSize: "1.5rem" }}
+      ></i> // Expense
+    );
+  };
 
   return (
     <div className="maindiv">
       <NavbarComponent />
       <div>
-        <DataTable value={movementsArr} tableStyle={{ width: "50rem" }}>
+        <DataTable value={movementsArr} tableStyle={{ width: "70rem" }}>
+          <Column body={statusTemplate} style={{ width: "3rem" }}></Column>
           <Column field="amount" header="Amount"></Column>
           <Column
             field="movement_date"
             header="Movement Date"
-            body={(rowData) => format(rowData.movement_date, "dd-MM-yyyy")}
+            body={(rowData) =>
+              format(new Date(rowData.movement_date), "dd-MM-yyyy")
+            }
           ></Column>
           <Column field="movement_name" header="Name"></Column>
-          <Column
-            field="description"
-            header="Description"
-            body={(rowData) => {
-              return rowData.description ? rowData.description : "N/A";
-            }}
-          ></Column>
+          <Column field="description" header="Description"></Column>
+          <Column header="Category" body={categoryTemplate}></Column>
+          <Column header="Actions" body={actionsTemplate}></Column>
         </DataTable>
       </div>
+
+      {/* Edit and Delete Dialogs */}
+      <EditDialog
+        visible={isEditDialogVisible}
+        movement={selectedMovement}
+        onHide={() => setIsEditDialogVisible(false)}
+        onUpdate={() => {
+          fetchMovements(); // Re-fetch movements after updating
+          setIsEditDialogVisible(false); // Close the dialog
+        }}
+      />
+      <DeleteDialog
+        visible={isDeleteDialogVisible}
+        movement={selectedMovement}
+        onHide={() => setIsDeleteDialogVisible(false)}
+        onDelete={(deletedId) => {
+          setMovementsArr((prev) => prev.filter((m) => m.id !== deletedId));
+        }}
+      />
     </div>
   );
 }

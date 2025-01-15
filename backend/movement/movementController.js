@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  getTotalAmountForUser,
   createNewMovement,
   loadMovementsByUserId,
   loadUserTotalAmount,
@@ -42,6 +43,7 @@ router.post("/v1/new_movment", async (req, res) => {
     user_id,
     description,
     movement_name,
+    type,
   } = req.body;
 
   console.log("NEW MOVEMENT POST WAS CALLED");
@@ -53,7 +55,8 @@ router.post("/v1/new_movment", async (req, res) => {
     category_code,
     user_id,
     description,
-    movement_name
+    movement_name,
+    type
   );
 
   try {
@@ -63,7 +66,8 @@ router.post("/v1/new_movment", async (req, res) => {
       category_code,
       user_id,
       description,
-      movement_name
+      movement_name,
+      type
     );
     res.status(201).json({ message: "Movment created successfully" });
   } catch (err) {
@@ -129,10 +133,8 @@ router.put("/v1/movement/:id", async (req, res) => {
 router.get("/v1/user_total_amount", authMiddleware, async (req, res) => {
   try {
     const user_id = req.user.id; // Extracting user_id from the decoded token
-
-    const data = await loadUserTotalAmount(user_id);
-
-    res.json(data);
+    const totalAmount = await getTotalAmountForUser(user_id); // Calculate total
+    res.status(200).json({ user_id, totalAmount });
   } catch (err) {
     console.error(err);
     res
@@ -140,6 +142,7 @@ router.get("/v1/user_total_amount", authMiddleware, async (req, res) => {
       .json({ message: "Error getting selected user's total amount" });
   }
 });
+
 
 router.get('/v1/movement_categories', async (req, res) => {
   console.log('Movement Controller');
