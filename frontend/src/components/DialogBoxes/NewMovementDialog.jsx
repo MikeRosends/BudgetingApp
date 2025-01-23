@@ -154,6 +154,22 @@ export default function NewMovementDialog({
             />
           </div>
           <div className="single-input-container">
+            <label htmlFor="description">Description</label>
+            <InputText
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div className="single-input-container">
+            <label htmlFor="date">Date</label>
+            <Calendar
+              value={movementDate}
+              onChange={(e) => setMovementDate(e.value)}
+              showButtonBar
+            />
+          </div>
+          <div className="single-input-container">
             <label htmlFor="category">Main Category</label>
             <Dropdown
               value={selectedMainCategory}
@@ -182,22 +198,7 @@ export default function NewMovementDialog({
         </div>
 
         <div className="secondary-dialog-container">
-          <div className="single-input-container">
-            <label htmlFor="date">Date</label>
-            <Calendar
-              value={movementDate}
-              onChange={(e) => setMovementDate(e.value)}
-              showButtonBar
-            />
-          </div>
-          <div className="single-input-container">
-            <label htmlFor="description">Description</label>
-            <InputText
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+          
         </div>
 
         <div className="dialog-btn-container">

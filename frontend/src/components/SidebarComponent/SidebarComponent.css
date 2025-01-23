@@ -1,0 +1,23 @@
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-menu li {
+  margin: 10px 0;
+}
+
+.sidebar-menu li a {
+  text-decoration: none;
+  color: #d6d6d6;
+  font-weight: bold;
+  display: block;
+  padding: 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar-menu li a:hover {
+  background-color: #f0f0f0;
+  color: #007bff;
+}

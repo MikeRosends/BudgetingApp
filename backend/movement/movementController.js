@@ -9,6 +9,11 @@ const {
   updateExistingMovement,
   fetchMainCategories,
   fetchSubcategories,
+  calculateBalanceProgression,
+  fetchStartingAmount,
+  modifyStartingAmount,
+  addStartingAmount,
+  getCategorySpending,
 } = require("./movementService");
 const authMiddleware = require("../user/authMiddleware");
 
@@ -100,18 +105,8 @@ router.put("/v1/movement/:id", async (req, res) => {
     user_id,
     description,
     movement_name,
+    type,
   } = req.body;
-
-  console.log("UPDATE MOVEMENT WAS CALLED");
-  console.log("DATA RECEIVED IN CONTROLLER: ", {
-    id,
-    amount,
-    movement_date,
-    category_code,
-    user_id,
-    description,
-    movement_name,
-  });
 
   try {
     const result = await updateExistingMovement(id, {
@@ -121,6 +116,7 @@ router.put("/v1/movement/:id", async (req, res) => {
       user_id,
       description,
       movement_name,
+      type
     });
     res.status(200).json({ message: "Movement updated successfully", data: result });
   } catch (err) {
@@ -175,6 +171,90 @@ router.get("/v1/categories/subcategories/:mainCategory", async (req, res) => {
     res.status(200).json(subcategories);
   } catch (err) {
     res.status(500).json({ error: "Error fetching subcategories" });
+  }
+});
+
+router.get("/v1/balance_progression", authMiddleware, async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: "Both startDate and endDate are required." });
+    }
+
+    const balanceProgression = await calculateBalanceProgression(user_id, startDate, endDate);
+
+    res.status(200).json(balanceProgression);
+  } catch (err) {
+    console.error("Error in /v1/balance_progression route:", err);
+    res.status(500).json({ message: "Error fetching balance progression." });
+  }
+});
+
+// Fetch the starting amount for the logged-in user
+router.get("/v1/starting_amount", authMiddleware, async (req, res) => {
+  try {
+    const user_id = req.user.id; // Extract user ID from the decoded token
+    const result = await fetchStartingAmount(user_id);
+    res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching starting amount" });
+  }
+});
+
+// Update the starting amount for the logged-in user
+router.put("/v1/starting_amount", authMiddleware, async (req, res) => {
+  const { starting_amount } = req.body;
+
+  if (starting_amount == null) {
+    return res.status(400).json({ message: "Starting amount is required" });
+  }
+
+  try {
+    const user_id = req.user.id; // Extract user ID from the decoded token
+    const result = await modifyStartingAmount(user_id, starting_amount);
+    res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error updating starting amount" });
+  }
+});
+
+// Insert a new starting amount for a user
+router.post("/v1/starting_amount", authMiddleware, async (req, res) => {
+  const { starting_amount } = req.body;
+
+  if (starting_amount == null) {
+    return res.status(400).json({ message: "Starting amount is required" });
+  }
+
+  try {
+    const user_id = req.user.id; // Extract user ID from the decoded token
+    const result = await addStartingAmount(user_id, starting_amount);
+    res.status(201).json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error inserting starting amount" });
+  }
+});
+
+router.get("/v1/category_spending", authMiddleware, async (req, res) => {
+  try {
+    const user_id = req.user.id; // Extracting user ID from the decoded token
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: "Start date and end date are required." });
+    }
+
+    const categorySpending = await getCategorySpending(user_id, startDate, endDate);
+
+    res.status(200).json(categorySpending);
+  } catch (err) {
+    console.error("Error in /v1/category_spending route:", err);
+    res.status(500).json({ message: "Error fetching category spending." });
   }
 });
 

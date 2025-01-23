@@ -21,8 +21,8 @@ export default function MainContainer() {
         },
       })
       .then((res) => {
-        // Format the total amount to two decimal places
-        setAccountAmount(parseFloat(res.data.totalAmount).toFixed(2));
+        // Format the total amount to two decimal places        
+        setAccountAmount(parseFloat(res.data.totalAmount.total_amount).toFixed(2));
       });
   }, []);
 

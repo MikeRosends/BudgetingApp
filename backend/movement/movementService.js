@@ -9,6 +9,12 @@ const {
   getMainCategories,
   getSubcategoriesByCategory,
   getAllCategories,
+  getMovementsInDateRange,
+  getStartingAmount,
+  updateStartingAmount,
+  insertStartingAmount,
+  getTotalAmountByUser,
+  getCategorySpendingFromDB,
 } = require("./movementRepository");
 
 const app = express();
@@ -16,12 +22,8 @@ app.use(express.json());
 
 const getTotalAmountForUser = async (user_id) => {
   try {
-    const movements = await getMovementsForUser(user_id); // Get movements with "type" directly
-
-    // Calculate the total directly using the "type" from movements table
-    const totalAmount = movements.reduce((sum, movement) => {
-      return sum + movement.amount * movement.type; // Multiply amount by type (1 for deposit, -1 for expense)
-    }, 0);
+    const totalAmount = await getTotalAmountByUser(user_id);
+    console.log("totalAmount -> ", totalAmount);
 
     return totalAmount;
   } catch (err) {
@@ -29,7 +31,6 @@ const getTotalAmountForUser = async (user_id) => {
     throw new Error("Failed to calculate total amount");
   }
 };
-
 
 const loadMovementsByUserId = async function (user_id) {
   try {
@@ -64,7 +65,6 @@ const loadMovementsByUserId = async function (user_id) {
     console.error("Error loading movements with user_id -> ", err);
   }
 };
-
 
 const createNewMovement = async function (
   amount,
@@ -118,17 +118,8 @@ const deleteExistingMovement = async function (id) {
 
 const updateExistingMovement = async function (
   id,
-  { amount, movement_date, category_code, user_id, description, movement_name }
+  { amount, movement_date, category_code, user_id, description, movement_name, type }
 ) {
-  console.log("VALUES RECEIVED in service for update >>>>", {
-    id,
-    amount,
-    movement_date,
-    category_code,
-    user_id,
-    description,
-    movement_name,
-  });
   try {
     const result = await updateMovement(id, {
       amount,
@@ -137,6 +128,7 @@ const updateExistingMovement = async function (
       user_id,
       description,
       movement_name,
+      type,
     });
 
     console.log("Movement successfully updated in the service layer!!");
@@ -217,6 +209,76 @@ const fetchSubcategories = async (mainCategory) => {
   }
 };
 
+const calculateBalanceProgression = async (user_id, startDate, endDate) => {
+  try {
+    const balanceProgression = await getMovementsInDateRange(
+      user_id,
+      startDate,
+      endDate
+    );
+
+    return balanceProgression;
+  } catch (err) {
+    console.error("Error calculating balance progression:", err);
+    throw new Error("Failed to calculate balance progression.");
+  }
+};
+
+// Fetch the starting amount for a user
+const fetchStartingAmount = async (user_id) => {
+  try {
+    const result = await getStartingAmount(user_id);
+    if (!result) {
+      throw new Error(`No starting amount found for user_id: ${user_id}`);
+    }
+    return result;
+  } catch (err) {
+    console.error("Error fetching starting amount:", err);
+    throw new Error("Failed to fetch starting amount");
+  }
+};
+
+// Update the starting amount for a user
+const modifyStartingAmount = async (user_id, new_amount) => {
+  try {
+    const result = await updateStartingAmount(user_id, new_amount);
+    return result;
+  } catch (err) {
+    console.error("Error updating starting amount:", err);
+    throw new Error("Failed to update starting amount");
+  }
+};
+
+// Insert a new starting amount for a user
+const addStartingAmount = async (user_id, starting_amount) => {
+  try {
+    const result = await insertStartingAmount(user_id, starting_amount);
+    return result;
+  } catch (err) {
+    console.error("Error inserting starting amount:", err);
+    throw new Error("Failed to insert starting amount");
+  }
+};
+
+const getCategorySpending = async (user_id, startDate, endDate) => {
+  try {
+    const categorySpending = await getCategorySpendingFromDB(
+      user_id,
+      startDate,
+      endDate
+    );
+
+    // Format and return the data
+    return categorySpending.map((item) => ({
+      category: item.category,
+      total_spent: parseFloat(item.total_spent), // Convert string to number for consistent formatting
+    }));
+  } catch (err) {
+    console.error("Error in getCategorySpending service:", err);
+    throw new Error("Failed to fetch category spending.");
+  }
+};
+
 module.exports = {
   getTotalAmountForUser,
   createNewMovement,
@@ -227,4 +289,9 @@ module.exports = {
   updateExistingMovement,
   fetchMainCategories,
   fetchSubcategories,
+  calculateBalanceProgression,
+  fetchStartingAmount,
+  modifyStartingAmount,
+  addStartingAmount,
+  getCategorySpending,
 };

@@ -12,6 +12,7 @@ import "./Movements.css";
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
+import SidebarComponent from "../SidebarComponent/SidebarComponent";
 
 export default function Movements() {
   const [movementsArr, setMovementsArr] = useState([]);
@@ -119,6 +120,7 @@ export default function Movements() {
 
   return (
     <div className="maindiv">
+      <SidebarComponent />
       <NavbarComponent />
       <div>
         <DataTable

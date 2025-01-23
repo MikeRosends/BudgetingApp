@@ -12,6 +12,26 @@ const getMovementsForUser = async (user_id) => {
   return rows;
 };
 
+const getTotalAmountByUser = async (user_id) => {
+  const query = `
+  SELECT 
+      user_id,
+      SUM(amount * type) AS total_amount
+  FROM 
+      public.movements
+  WHERE user_id = $1
+  GROUP BY user_id
+          `;
+  try {
+    const { rows } = await pgConnection.query(query, [user_id]);
+
+    return rows.length > 0 ? rows[0] : null;
+  } catch (err) {
+    console.error("Error getting total amount -> ", err);
+    throw new Error("Failed to get total amount from database");
+  }
+};
+
 const createMovement = async function (
   amount,
   movement_date,
@@ -54,7 +74,7 @@ const createMovement = async function (
       user_id,
       description,
       movement_name,
-      type
+      type,
     ]);
 
     return rows[0];
@@ -88,7 +108,7 @@ const deleteMovement = async function (id) {
 
 const updateMovement = async function (
   id,
-  { amount, movement_date, category_code, user_id, description, movement_name }
+  { amount, movement_date, category_code, user_id, description, movement_name, type }
 ) {
   console.log("Updating movement with id:", id);
 
@@ -100,7 +120,8 @@ const updateMovement = async function (
     "category_code" = COALESCE($4, "category_code"),
     "user_id" = COALESCE($5, "user_id"),
     "description" = COALESCE($6, "description"),
-    "movement_name" = COALESCE($7, "movement_name")
+    "movement_name" = COALESCE($7, "movement_name"),
+    "type" = COALESCE($8, "type")
   WHERE "id" = $1
   RETURNING *;`;
 
@@ -113,6 +134,7 @@ const updateMovement = async function (
       user_id,
       description,
       movement_name,
+      type,
     ]);
 
     if (!rows.length) {
@@ -192,9 +214,110 @@ const getAllCategories = async () => {
   }
 };
 
+const getMovementsInDateRange = async (user_id, startDate, endDate) => {
+  const query = `
+    WITH initial_balance AS (
+      SELECT COALESCE(SUM(amount * type), 0) AS balance
+      FROM public.movements
+      WHERE user_id = $1 AND movement_date < $2
+    ),
+    movements_with_balance AS (
+      SELECT 
+        movement_date, 
+        amount, 
+        type, 
+        SUM(amount * type) OVER (ORDER BY movement_date ASC) AS running_balance
+      FROM public.movements
+      WHERE user_id = $1 AND movement_date BETWEEN $2 AND $3
+    )
+    SELECT 
+      m.movement_date,
+      m.amount,
+      m.type,
+      (i.balance + m.running_balance) AS balance_after_movement
+    FROM movements_with_balance m, initial_balance i
+    ORDER BY m.movement_date DESC;
+  `;
 
+  try {
+    const { rows } = await pgConnection.query(query, [
+      user_id,
+      startDate,
+      endDate,
+    ]);
+    return rows;
+  } catch (err) {
+    console.error("Error fetching movements in date range:", err);
+    throw new Error("Failed to fetch movements for the specified date range.");
+  }
+};
+
+
+// Fetch the starting amount for a user
+const getStartingAmount = async (user_id) => {
+  const query = `
+    SELECT starting_amount, last_updated
+    FROM starting_amounts
+    WHERE user_id = $1;
+  `;
+  const { rows } = await pgConnection.query(query, [user_id]);
+  return rows[0]; // Return the starting amount row
+};
+
+// Update the starting amount for a user
+const updateStartingAmount = async (user_id, new_amount) => {
+  const query = `
+    UPDATE starting_amounts
+    SET starting_amount = $1, last_updated = CURRENT_TIMESTAMP
+    WHERE user_id = $2
+    RETURNING *;
+  `;
+  const { rows } = await pgConnection.query(query, [new_amount, user_id]);
+  return rows[0]; // Return the updated row
+};
+
+// Insert a new starting amount for a user
+const insertStartingAmount = async (user_id, starting_amount) => {
+  const query = `
+    INSERT INTO starting_amounts (user_id, starting_amount)
+    VALUES ($1, $2)
+    RETURNING *;
+  `;
+  const { rows } = await pgConnection.query(query, [user_id, starting_amount]);
+  return rows[0]; // Return the inserted row
+};
+
+const getCategorySpendingFromDB = async (user_id, startDate, endDate) => {
+  const query = `
+    SELECT 
+      c.category, 
+      SUM(m.amount * m.type) AS total_spent
+    FROM 
+      public.movements m
+    INNER JOIN 
+      public.categories c
+    ON 
+      m.category_code = c.category_code
+    WHERE 
+      m.user_id = $1
+      AND m.movement_date BETWEEN $2 AND $3
+    GROUP BY 
+      c.category
+    ORDER BY 
+      total_spent DESC;
+  `;
+
+  try {
+    const { rows } = await pgConnection.query(query, [user_id, startDate, endDate]);
+    return rows;
+  } catch (err) {
+    console.error("Error fetching category spending from the database:", err);
+    throw new Error("Database query failed.");
+  }
+};
 
 module.exports = {
+  getTotalAmountByUser,
   getMovementsForUser,
   createMovement,
   getMovementsByUserId,
@@ -203,4 +326,9 @@ module.exports = {
   getMainCategories,
   getSubcategoriesByCategory,
   getAllCategories,
+  getMovementsInDateRange,
+  getStartingAmount,
+  updateStartingAmount,
+  insertStartingAmount,
+  getCategorySpendingFromDB,
 };

@@ -29,7 +29,9 @@ export default function EditDialog({ visible, movement, onHide, onUpdate }) {
 
   const fetchMainCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:8181/v1/categories/main");
+      const response = await axios.get(
+        "http://localhost:8181/v1/categories/main"
+      );
       setMainCategories(response.data);
     } catch (err) {
       console.error("Error fetching main categories", err);
@@ -38,7 +40,12 @@ export default function EditDialog({ visible, movement, onHide, onUpdate }) {
 
   const fetchSubcategories = async (category) => {
     try {
-      const response = await axios.get(`http://localhost:8181/v1/categories/subcategories/${category}`);
+      // Encode the category name to handle the "/"
+      const encodedCategory = encodeURIComponent(category);
+
+      const response = await axios.get(
+        `http://localhost:8181/v1/categories/subcategories/${encodedCategory}`
+      );
       setSubcategories(response.data);
     } catch (err) {
       console.error("Error fetching subcategories", err);
@@ -54,8 +61,14 @@ export default function EditDialog({ visible, movement, onHide, onUpdate }) {
 
   const handleSubcategoryChange = (subcategory) => {
     setSelectedSubcategory(subcategory);
-    const subcategoryDetails = subcategories.find((s) => s.subcategory === subcategory);
-    setEditedMovement({ ...editedMovement, subcategory, category_code: subcategoryDetails?.category_code });
+    const subcategoryDetails = subcategories.find(
+      (s) => s.subcategory === subcategory
+    );
+    setEditedMovement({
+      ...editedMovement,
+      subcategory,
+      category_code: subcategoryDetails?.category_code,
+    });
   };
 
   const handleInputChange = (key, value) => {
@@ -71,7 +84,10 @@ export default function EditDialog({ visible, movement, onHide, onUpdate }) {
     };
 
     axios
-      .put(`http://localhost:8181/v1/movement/${editedMovement.id}`, updatedMovement)
+      .put(
+        `http://localhost:8181/v1/movement/${editedMovement.id}`,
+        updatedMovement
+      )
       .then((response) => {
         if (response.data) {
           onUpdate(response.data); // Pass updated movement to `onUpdate`
@@ -83,6 +99,18 @@ export default function EditDialog({ visible, movement, onHide, onUpdate }) {
   return (
     <Dialog visible={visible} onHide={onHide} header="Edit Movement">
       <div className="form-group">
+        <div className="form-group">
+          <label>Movement Type</label>
+          <Dropdown
+            value={editedMovement.type}
+            options={[
+              { label: "Deposit (Positive)", value: 1 },
+              { label: "Expense (Negative)", value: -1 },
+            ]}
+            onChange={(e) => handleInputChange("type", e.value)}
+            placeholder="Select Type"
+          />
+        </div>
         <label>Amount</label>
         <InputNumber
           value={editedMovement.amount}
@@ -97,6 +125,13 @@ export default function EditDialog({ visible, movement, onHide, onUpdate }) {
         <InputText
           value={editedMovement.movement_name || ""}
           onChange={(e) => handleInputChange("movement_name", e.target.value)}
+        />
+      </div>
+      <div className="form-group">
+        <label>Description</label>
+        <InputText
+          value={editedMovement.description || ""}
+          onChange={(e) => handleInputChange("description", e.target.value)}
         />
       </div>
       <div className="form-group">
