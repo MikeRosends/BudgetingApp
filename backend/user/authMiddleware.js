@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-module.exports = (req, res, next) => {
+const authMiddleware = (req, res, next) => {
   const jwtSecret = process.env.JWT_SECRET;
 
   if (!jwtSecret) {
@@ -27,3 +27,5 @@ module.exports = (req, res, next) => {
     return res.status(403).json({ message: "Invalid token" });
   }
 };
+
+module.exports = authMiddleware;

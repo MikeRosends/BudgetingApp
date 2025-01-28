@@ -182,6 +182,22 @@ const getMainCategories = async function () {
   }
 };
 
+const createCategory = async (category_code, category, subcategory) => {
+  const query = `
+    INSERT INTO categories (category_code, category, subcategory)
+    VALUES ($1, $2, $3)
+    RETURNING *;
+  `;
+
+  try {
+    const { rows } = await pgConnection.query(query, [category_code, category, subcategory]);
+    return rows[0]; // Return the inserted row
+  } catch (err) {
+    console.error("Error creating new category -> ", err);
+    throw new Error("Database query to create new category failed");
+  }
+};
+
 const getSubcategoriesByCategory = async function (mainCategory) {
   console.log("Fetching subcategories for main category:", mainCategory);
   const query = `
@@ -197,6 +213,21 @@ const getSubcategoriesByCategory = async function (mainCategory) {
   } catch (err) {
     console.error("Error fetching subcategories -> ", err);
     throw new Error("Database query to fetch subcategories failed");
+  }
+};
+
+const getHighestCategoryCode = async () => {
+  const query = `
+    SELECT MAX(category_code) AS highest_category_code
+    FROM categories;
+  `;
+
+  try {
+    const { rows } = await pgConnection.query(query);
+    return rows[0].highest_category_code; // Return the highest category code
+  } catch (err) {
+    console.error("Error fetching highest category code -> ", err);
+    throw new Error("Database query to fetch highest category code failed");
   }
 };
 
@@ -325,10 +356,12 @@ module.exports = {
   updateMovement,
   getMainCategories,
   getSubcategoriesByCategory,
+  createCategory,
   getAllCategories,
   getMovementsInDateRange,
   getStartingAmount,
   updateStartingAmount,
   insertStartingAmount,
   getCategorySpendingFromDB,
+  getHighestCategoryCode,
 };

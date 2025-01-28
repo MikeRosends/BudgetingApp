@@ -210,7 +210,6 @@ export default function BalanceProgression() {
     <div>
       <SidebarComponent />
       <NavbarComponent />
-      <h2>Balance Progression</h2>
       <div className="dropdown-container">
         <label htmlFor="intervalType">Select Interval:</label>
         <Dropdown
@@ -220,66 +219,65 @@ export default function BalanceProgression() {
           placeholder="Select Interval"
           className="p-dropdown"
         />
+
+        {intervalType === "MTD" && (
+          <div className="date-picker">
+            <label htmlFor="selectedMonth">Select Month:</label>
+            <Calendar
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.value)}
+              placeholder="Select Month"
+              view="month"
+              dateFormat="mm/yy"
+              showButtonBar
+            />
+            <button onClick={handleMTDSubmit} className="p-button p-component">
+              Fetch MTD
+            </button>
+          </div>
+        )}
+        {intervalType === "YTD" && (
+          <div className="date-picker">
+            <label htmlFor="selectedYear">Select Year:</label>
+            <Calendar
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.value)}
+              placeholder="Select Year"
+              view="year"
+              dateFormat="yy"
+              showButtonBar
+            />
+            <button onClick={handleYTDSubmit} className="p-button p-component">
+              Fetch YTD
+            </button>
+          </div>
+        )}
+
+        {intervalType === "CUSTOM" && (
+          <div className="custom-date-picker">
+            <label htmlFor="customStartDate">Start Date:</label>
+            <Calendar
+              value={customStartDate}
+              onChange={(e) => setCustomStartDate(e.value)}
+              placeholder="Select Start Date"
+              showButtonBar
+            />
+            <label htmlFor="customEndDate">End Date:</label>
+            <Calendar
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.value)}
+              placeholder="Select End Date"
+              showButtonBar
+            />
+            <button
+              onClick={handleCustomIntervalSubmit}
+              className="p-button p-component"
+            >
+              Fetch Custom Interval
+            </button>
+          </div>
+        )}
       </div>
-
-      {intervalType === "MTD" && (
-        <div className="date-picker">
-          <label htmlFor="selectedMonth">Select Month:</label>
-          <Calendar
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.value)}
-            placeholder="Select Month"
-            view="month"
-            dateFormat="mm/yy"
-            showButtonBar
-          />
-          <button onClick={handleMTDSubmit} className="p-button p-component">
-            Fetch MTD
-          </button>
-        </div>
-      )}
-
-      {intervalType === "YTD" && (
-        <div className="date-picker">
-          <label htmlFor="selectedYear">Select Year:</label>
-          <Calendar
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.value)}
-            placeholder="Select Year"
-            view="year"
-            dateFormat="yy"
-            showButtonBar
-          />
-          <button onClick={handleYTDSubmit} className="p-button p-component">
-            Fetch YTD
-          </button>
-        </div>
-      )}
-
-      {intervalType === "CUSTOM" && (
-        <div className="custom-date-picker">
-          <label htmlFor="customStartDate">Start Date:</label>
-          <Calendar
-            value={customStartDate}
-            onChange={(e) => setCustomStartDate(e.value)}
-            placeholder="Select Start Date"
-            showButtonBar
-          />
-          <label htmlFor="customEndDate">End Date:</label>
-          <Calendar
-            value={customEndDate}
-            onChange={(e) => setCustomEndDate(e.value)}
-            placeholder="Select End Date"
-            showButtonBar
-          />
-          <button
-            onClick={handleCustomIntervalSubmit}
-            className="p-button p-component"
-          >
-            Fetch Custom Interval
-          </button>
-        </div>
-      )}
 
       {/* Line Chart Section */}
       <div className="chart-container">

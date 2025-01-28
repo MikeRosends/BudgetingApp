@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../styles/login.css";
+import { Button } from "primereact/button";
+import "./login.css";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +14,7 @@ const Login = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));    
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -50,21 +51,25 @@ const Login = () => {
           required
         />
         <input
-          type="user_password"
+          type="password"
           name="user_password"
           placeholder="Password"
           value={formData.user_password}
           onChange={handleChange}
           required
         />
-        <button type="submit">Login</button>
+        <Button type="submit" label="Login" severity="success" raised />
       </form>
       {message && <p>{message}</p>}
 
       {/* Register button */}
-      <button type="button" onClick={handleRegisterRedirect}>
-        Register
-      </button>
+      <Button
+        type="button"
+        onClick={handleRegisterRedirect}
+        label="Register"
+        severity="info"
+        outlined
+      />
     </div>
   );
 };

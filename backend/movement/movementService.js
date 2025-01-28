@@ -15,6 +15,8 @@ const {
   insertStartingAmount,
   getTotalAmountByUser,
   getCategorySpendingFromDB,
+  createCategory,
+  getHighestCategoryCode,
 } = require("./movementRepository");
 
 const app = express();
@@ -197,6 +199,19 @@ const fetchMainCategories = async () => {
   }
 };
 
+const createMainCategory = async (category, subcategory) => {
+  try {
+    const highestCategoryCode = await getHighestCategoryCode();
+    const newCategoryCode = highestCategoryCode + 1;
+    const result = await createCategory(newCategoryCode, category, subcategory);
+    console.log("New category created successfully:", result);
+    return result;
+  } catch (err) {
+    console.error("Error creating new category:", err);
+    throw new Error("Failed to create new category");
+  }
+};
+
 // Service function to get subcategories
 const fetchSubcategories = async (mainCategory) => {
   try {
@@ -294,4 +309,5 @@ module.exports = {
   modifyStartingAmount,
   addStartingAmount,
   getCategorySpending,
+  createMainCategory,
 };

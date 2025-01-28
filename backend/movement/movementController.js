@@ -9,6 +9,7 @@ const {
   updateExistingMovement,
   fetchMainCategories,
   fetchSubcategories,
+  createMainCategory,
   calculateBalanceProgression,
   fetchStartingAmount,
   modifyStartingAmount,
@@ -89,7 +90,9 @@ router.delete("/v1/movement/:id", async (req, res) => {
 
   try {
     const result = await deleteExistingMovement(id);
-    res.status(200).json({ message: "Movement deleted successfully", data: result });
+    res
+      .status(200)
+      .json({ message: "Movement deleted successfully", data: result });
   } catch (err) {
     console.error("Error in DELETE /v1/movement/:id route", err);
     res.status(500).json({ message: "Error deleting movement" });
@@ -116,15 +119,16 @@ router.put("/v1/movement/:id", async (req, res) => {
       user_id,
       description,
       movement_name,
-      type
+      type,
     });
-    res.status(200).json({ message: "Movement updated successfully", data: result });
+    res
+      .status(200)
+      .json({ message: "Movement updated successfully", data: result });
   } catch (err) {
     console.error("Error in PUT /v1/movement/:id route", err);
     res.status(500).json({ message: "Error updating movement" });
   }
 });
-
 
 router.get("/v1/user_total_amount", authMiddleware, async (req, res) => {
   try {
@@ -139,16 +143,14 @@ router.get("/v1/user_total_amount", authMiddleware, async (req, res) => {
   }
 });
 
+router.get("/v1/movement_categories", async (req, res) => {
+  console.log("Movement Controller");
 
-router.get('/v1/movement_categories', async (req, res) => {
-  console.log('Movement Controller');
-  
   try {
     const data = await loadMovementCategories();
 
     res.status(200).json(data);
   } catch (err) {
-    
     res.status(500).json({ message: "Error getting categories" });
   }
 });
@@ -160,6 +162,28 @@ router.get("/v1/categories/main", async (req, res) => {
     res.status(200).json(mainCategories);
   } catch (err) {
     res.status(500).json({ error: "Error fetching main categories" });
+  }
+});
+
+// Route to create a new main category
+router.post("/v1/categories/main", async (req, res) => {
+  console.log("POST /v1/categories/main route hit");
+  
+  const { category, subcategory } = req.body;
+  console.log("categoryName: ", category);
+  console.log("subCategoryName: ", subcategory);
+  
+
+  if (!category && !subcategory) {
+    return res.status(400).json({ message: "Category and Subcategory name is required" });
+  }
+
+  try {
+    const newCategory = await createMainCategory(category, subcategory);
+    res.status(201).json(newCategory);
+  } catch (err) {
+    console.error("Error in POST /v1/categories/main route:", err);
+    res.status(500).json({ message: "Error creating new category" });
   }
 });
 
@@ -180,10 +204,16 @@ router.get("/v1/balance_progression", authMiddleware, async (req, res) => {
     const { startDate, endDate } = req.query;
 
     if (!startDate || !endDate) {
-      return res.status(400).json({ message: "Both startDate and endDate are required." });
+      return res
+        .status(400)
+        .json({ message: "Both startDate and endDate are required." });
     }
 
-    const balanceProgression = await calculateBalanceProgression(user_id, startDate, endDate);
+    const balanceProgression = await calculateBalanceProgression(
+      user_id,
+      startDate,
+      endDate
+    );
 
     res.status(200).json(balanceProgression);
   } catch (err) {
@@ -246,10 +276,16 @@ router.get("/v1/category_spending", authMiddleware, async (req, res) => {
     const { startDate, endDate } = req.query;
 
     if (!startDate || !endDate) {
-      return res.status(400).json({ message: "Start date and end date are required." });
+      return res
+        .status(400)
+        .json({ message: "Start date and end date are required." });
     }
 
-    const categorySpending = await getCategorySpending(user_id, startDate, endDate);
+    const categorySpending = await getCategorySpending(
+      user_id,
+      startDate,
+      endDate
+    );
 
     res.status(200).json(categorySpending);
   } catch (err) {
@@ -257,6 +293,5 @@ router.get("/v1/category_spending", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Error fetching category spending." });
   }
 });
-
 
 module.exports = router;

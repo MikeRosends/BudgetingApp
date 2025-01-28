@@ -2,17 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const {
-  insertNewUserProfile,
-  getUserByEmail,
-} = require("./userRepository");
+const { insertNewUserProfile, getUserByEmail } = require("./userRepository");
 
 const app = express();
 app.use(express.json());
 
 const loadUsers = async function () {
-  console.log('calling loadUsers');
-  
+  console.log("calling loadUsers");
+
   try {
     const data = await getUsers();
     console.log("from service -> ", data);
@@ -29,16 +26,14 @@ const userLogin = async function (user_email, user_password) {
 
   try {
     const data = await getUserByEmail(user_email);
-    console.log('DAATAAA ->>>> ', data);
+    console.log("DAATAAA ->>>> ", data);
 
     const passwordMatch = await bcrypt.compare(
       user_password,
       data.user_password
     );
-    
-    passwordMatch ? console.log('MATCH') : console.log('NO MATCH');
-    
-    
+
+    passwordMatch ? console.log("MATCH") : console.log("NO MATCH");
 
     if (!passwordMatch) {
       throw new Error("Invalid credentials");
@@ -49,7 +44,7 @@ const userLogin = async function (user_email, user_password) {
       process.env.JWT_SECRET,
       { expiresIn: "3h" }
     );
-    
+
     return token;
   } catch (err) {
     console.error("Error getting user by the given email", err);
