@@ -35,8 +35,12 @@
     border-radius: 20px;
     padding-right: 5vh;
     padding: 20px 40px;
-    background-color: rgb(27, 27, 27);
+    background-color: rgb(46, 46, 46);
     box-shadow: 7px 7px 40px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);
+}
+
+.individual-stat h2 {
+    color: rgb(224, 224, 224);;
 }
 
 .second-container {
@@ -56,8 +60,6 @@
     flex-direction: column;
     padding: 30px 20px;
     width: 30%;
-    background-color: rgb(255, 255, 255);
-    box-shadow: 7px 7px 40px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);    
 }
 
 .card p {
@@ -70,11 +72,11 @@
 }
 
 .card button {
-    border: 3px solid white;
+    border: 3px solid rgb(224, 224, 224);;
     font-weight: 700;
     height: 50px;
     line-height: 45px;
-    color: white;
+    color: rgb(224, 224, 224);
     border-radius: 15px;
     padding: 0 20px;
     text-align: center;

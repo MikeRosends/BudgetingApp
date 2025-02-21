@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "./register.css";
 
 const Register = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [formData, setFormData] = useState({
     user_email: "",
     user_password: "",
@@ -20,7 +22,7 @@ const Register = () => {
     e.preventDefault();
     try {
       axios
-        .post("http://localhost:8181/v1/register", formData)
+        .post(`${apiUrl}/v1/register`, formData)
         .then(() => {
           setMessage("Registration successful! You can now log in.");
           navigate("/login");

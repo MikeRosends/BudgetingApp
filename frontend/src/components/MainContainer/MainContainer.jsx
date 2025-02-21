@@ -6,6 +6,8 @@ import { Button } from "primereact/button";
 import NewMovementDialog from "../DialogBoxes/NewMovementDialog";
 
 export default function MainContainer() {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [message, setMessage] = useState("");
   const [accountAmount, setAccountAmount] = useState(0);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -15,14 +17,16 @@ export default function MainContainer() {
     const token = localStorage.getItem("token");
 
     axios
-      .get("http://localhost:8181/v1/user_total_amount", {
+      .get(`${apiUrl}/v1/user_total_amount`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        // Format the total amount to two decimal places        
-        setAccountAmount(parseFloat(res.data.totalAmount.total_amount).toFixed(2));
+        // Format the total amount to two decimal places
+        setAccountAmount(
+          parseFloat(res.data.totalAmount.total_amount).toFixed(2)
+        );
       });
   }, []);
 
@@ -35,7 +39,7 @@ export default function MainContainer() {
     <div className="main-container">
       <div className="header">
         <p className="header-title">Miguel Rosendo</p>
-        <p className="header-date">21<sup>st</sup> of November</p>
+        <p className="header-date">{new Date().toDateString()}</p>
       </div>
 
       <div className="first-container">
@@ -50,9 +54,9 @@ export default function MainContainer() {
         <div className="card-row">
           <div className="card">
             <Link to="/movements">
-              <button>
+              <Button id="chek-movement">
                 <p>Check Movements</p>
-              </button>
+              </Button>
             </Link>
           </div>
           <div className="card">

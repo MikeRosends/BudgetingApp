@@ -8,7 +8,6 @@ import Login from "./components/LoginAndRegister/Login";
 import Register from "./components/LoginAndRegister/Register";
 import NewMovementDialog from "./components/DialogBoxes/NewMovementDialog"
 import BalanceProgression from "./components/BalanceProgression/BalanceProgression"
-import StartingAmountComponent from "./components/StartingAmount/StartingAmountComponent"
 import CategoriesEditor from "./components/Categories/CategoriesEditor";
 
 function App() {
@@ -23,7 +22,6 @@ function App() {
         <Route path="/movements" element={<Movements />} />
         <Route path="/dialog" element={<NewMovementDialog />} />
         <Route path="/balance_progression" element={<BalanceProgression />} />
-        <Route path="/starting_amount" element={<StartingAmountComponent />} />
         <Route path="/edit_categories" element={<CategoriesEditor />} />
         
       </Routes>

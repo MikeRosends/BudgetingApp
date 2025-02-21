@@ -5,6 +5,8 @@ import { Button } from "primereact/button";
 import "./login.css";
 
 const Login = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [formData, setFormData] = useState({
     user_email: "",
     user_password: "",
@@ -21,7 +23,7 @@ const Login = () => {
     e.preventDefault();
     try {
       axios
-        .post("http://localhost:8181/v1/login", formData)
+        .post(`${apiUrl}/v1/login`, formData)
         .then((res) => {
           localStorage.setItem("token", res.data.token);
           navigate("/dashboard");

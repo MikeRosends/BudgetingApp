@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import NavbarComponent from "../NavbarComponent/NavbarComponent";
 import axios from "axios";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import format from "date-fns/format";
 import { jwtDecode } from "jwt-decode";
-import { InputText } from "primereact/inputtext"; // Import for search input
+import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
+import { Tag } from "primereact/tag";
 import EditDialog from "../DialogBoxes/EditDialog";
 import DeleteDialog from "../DialogBoxes/DeleteDialog";
 import "./Movements.css";
@@ -15,7 +16,10 @@ import "primeicons/primeicons.css";
 import SidebarComponent from "../SidebarComponent/SidebarComponent";
 
 export default function Movements() {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [movementsArr, setMovementsArr] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedMovement, setSelectedMovement] = useState(null);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
@@ -32,7 +36,7 @@ export default function Movements() {
       const userId = decodedToken.id;
 
       axios
-        .get("http://localhost:8181/v1/movements_with_user_id", {
+        .get(`${apiUrl}/v1/movements_with_user_id`, {
           params: { user_id: userId },
         })
         .then((response) => {
@@ -40,6 +44,16 @@ export default function Movements() {
         })
         .catch((err) => {
           console.error("Error fetching movements", err);
+        });
+
+      axios
+        .get(`${apiUrl}/v1/categories/main`)
+        .then((res) => {
+          console.log(res.data);
+          setCategories(res.data);
+        })
+        .catch((err) => {
+          console.error("Error fetching categories", err);
         });
     } else {
       console.error("Token not found");
@@ -107,26 +121,26 @@ export default function Movements() {
       <i
         className="pi pi-arrow-up text-green-500"
         style={{ fontSize: "1.5rem" }}
-      ></i> // Deposit
+      ></i>
     ) : (
       <i
         className="pi pi-arrow-down text-red-500"
         style={{ fontSize: "1.5rem" }}
-      ></i> // Expense
+      ></i>
     );
   };
 
-  const header = renderHeader(); // Render the header with global search
+  const header = renderHeader();
 
   return (
     <div className="maindiv">
       <SidebarComponent />
-      <NavbarComponent />
       <div>
         <DataTable
           value={movementsArr}
           paginator
           rows={50}
+          rowsPerPageOptions={[50, 100, 200, 500, 1000]}
           dataKey="id"
           tableStyle={{ width: "70rem" }}
           globalFilterFields={[
@@ -134,8 +148,10 @@ export default function Movements() {
             "description",
             "amount",
             "movement_date",
+            "category"
           ]}
           filters={filters}
+          filterDisplay="row"
           header={header}
         >
           <Column body={statusTemplate} style={{ width: "3rem" }}></Column>
@@ -149,7 +165,11 @@ export default function Movements() {
           ></Column>
           <Column field="movement_name" header="Name"></Column>
           <Column field="description" header="Description"></Column>
-          <Column header="Category" body={categoryTemplate}></Column>
+          <Column
+            header="Category"
+            body={categoryTemplate}
+          ></Column>
+          <Column field="balance_after" header="After"></Column>
           <Column header="Actions" body={actionsTemplate}></Column>
         </DataTable>
       </div>

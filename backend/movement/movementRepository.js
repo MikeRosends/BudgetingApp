@@ -282,6 +282,48 @@ const getMovementsInDateRange = async (user_id, startDate, endDate) => {
     throw new Error("Failed to fetch movements for the specified date range.");
   }
 };
+const getBeforeAndAfterMovement = async (user_id) => {
+  const query = `
+    WITH ordered_movements AS (
+  SELECT 
+    id,
+    amount,
+    movement_date,
+    category_code,
+    user_id,
+    description,
+    movement_name,
+    type,
+    SUM(amount * type) OVER (ORDER BY movement_date ASC, id ASC) AS balance_after
+  FROM movements
+  WHERE user_id = $1
+)
+SELECT 
+  id,
+  amount,
+  movement_date,
+  category_code,
+  user_id,
+  description,
+  movement_name,
+  type,
+  COALESCE(LAG(balance_after) OVER (ORDER BY movement_date ASC, id ASC), 0) AS balance_before,
+  balance_after
+FROM ordered_movements
+ORDER BY movement_date DESC, id DESC;
+
+  `;
+
+  try {
+    const { rows } = await pgConnection.query(query, [
+      user_id,
+    ]);
+    return rows;
+  } catch (err) {
+    console.error("Error fetching movements in date range:", err);
+    throw new Error("Failed to fetch movements for the specified date range.");
+  }
+};
 
 
 // Fetch the starting amount for a user
@@ -320,22 +362,24 @@ const insertStartingAmount = async (user_id, starting_amount) => {
 
 const getCategorySpendingFromDB = async (user_id, startDate, endDate) => {
   const query = `
-    SELECT 
-      c.category, 
-      SUM(m.amount * m.type) AS total_spent
-    FROM 
-      public.movements m
-    INNER JOIN 
-      public.categories c
-    ON 
-      m.category_code = c.category_code
-    WHERE 
-      m.user_id = $1
-      AND m.movement_date BETWEEN $2 AND $3
-    GROUP BY 
-      c.category
-    ORDER BY 
-      total_spent DESC;
+SELECT 
+  c.category, 
+  ABS(SUM(m.amount * m.type)) AS total_spent
+FROM 
+  public.movements m
+INNER JOIN 
+  public.categories c
+ON 
+  m.category_code = c.category_code
+WHERE 
+  m.user_id = $1
+  AND m.movement_date BETWEEN $2 AND $3
+GROUP BY 
+  c.category
+HAVING 
+  SUM(m.amount * m.type) <= 0
+ORDER BY 
+  c.category ASC;
   `;
 
   try {
@@ -343,6 +387,38 @@ const getCategorySpendingFromDB = async (user_id, startDate, endDate) => {
     return rows;
   } catch (err) {
     console.error("Error fetching category spending from the database:", err);
+    throw new Error("Database query failed.");
+  }
+};
+
+const getSubategorySpendingFromDB = async (user_id, startDate, endDate) => {
+  const query = `
+SELECT 
+  c.subcategory, 
+  ABS(SUM(m.amount * m.type)) AS total_spent
+FROM 
+  public.movements m
+INNER JOIN 
+  public.categories c
+ON 
+  m.category_code = c.category_code
+WHERE 
+  m.user_id = $1
+  AND m.movement_date BETWEEN $2 AND $3
+GROUP BY 
+  c.subcategory
+HAVING 
+  SUM(m.amount * m.type) <= 0
+ORDER BY 
+  c.subcategory ASC;
+
+  `;
+
+  try {
+    const { rows } = await pgConnection.query(query, [user_id, startDate, endDate]);
+    return rows;
+  } catch (err) {
+    console.error("Error fetching subcategory spending from the database:", err);
     throw new Error("Database query failed.");
   }
 };
@@ -359,9 +435,11 @@ module.exports = {
   createCategory,
   getAllCategories,
   getMovementsInDateRange,
+  getBeforeAndAfterMovement,
   getStartingAmount,
   updateStartingAmount,
   insertStartingAmount,
   getCategorySpendingFromDB,
+  getSubategorySpendingFromDB,
   getHighestCategoryCode,
 };

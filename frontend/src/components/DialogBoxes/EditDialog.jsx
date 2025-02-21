@@ -8,6 +8,8 @@ import axios from "axios";
 import "./dialogbox.css";
 
 export default function EditDialog({ visible, movement, onHide, onUpdate }) {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [editedMovement, setEditedMovement] = useState(movement || {});
   const [mainCategories, setMainCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
@@ -29,9 +31,7 @@ export default function EditDialog({ visible, movement, onHide, onUpdate }) {
 
   const fetchMainCategories = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:8181/v1/categories/main"
-      );
+      const response = await axios.get(`${apiUrl}/v1/categories/main`);
       setMainCategories(response.data);
     } catch (err) {
       console.error("Error fetching main categories", err);
@@ -44,7 +44,7 @@ export default function EditDialog({ visible, movement, onHide, onUpdate }) {
       const encodedCategory = encodeURIComponent(category);
 
       const response = await axios.get(
-        `http://localhost:8181/v1/categories/subcategories/${encodedCategory}`
+        `${apiUrl}/v1/categories/subcategories/${encodedCategory}`
       );
       setSubcategories(response.data);
     } catch (err) {
@@ -84,10 +84,7 @@ export default function EditDialog({ visible, movement, onHide, onUpdate }) {
     };
 
     axios
-      .put(
-        `http://localhost:8181/v1/movement/${editedMovement.id}`,
-        updatedMovement
-      )
+      .put(`${apiUrl}/v1/movement/${editedMovement.id}`, updatedMovement)
       .then((response) => {
         if (response.data) {
           onUpdate(response.data); // Pass updated movement to `onUpdate`

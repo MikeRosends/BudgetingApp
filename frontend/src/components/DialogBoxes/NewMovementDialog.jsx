@@ -15,6 +15,7 @@ export default function NewMovementDialog({
   setVisible,
   defaultType,
 }) {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
 
   // Form State
@@ -37,7 +38,7 @@ export default function NewMovementDialog({
 
   useEffect(() => {
     axios
-      .get("http://localhost:8181/v1/categories/main")
+      .get(`${apiUrl}/v1/categories/main`)
       .then((response) => {
         setMainCategories(response.data);
       })
@@ -50,8 +51,9 @@ export default function NewMovementDialog({
     setSelectedMainCategory(category);
     setSelectedSubcategory(null); // Reset subcategory when changing main category
 
+    const encodedCategory = encodeURIComponent(category);
     axios
-      .get(`http://localhost:8181/v1/categories/subcategories/${category}`)
+      .get(`${apiUrl}/v1/categories/subcategories/${encodedCategory}`)
       .then((response) => {
         setSubcategories(response.data);
       })
@@ -100,7 +102,7 @@ export default function NewMovementDialog({
       });
 
       axios
-        .post("http://localhost:8181/v1/new_movment", {
+        .post(`${apiUrl}/v1/new_movment`, {
           amount,
           movement_date: movementDate,
           category_code: selectedSubcategory.category_code,
@@ -197,9 +199,7 @@ export default function NewMovementDialog({
           </div>
         </div>
 
-        <div className="secondary-dialog-container">
-          
-        </div>
+        <div className="secondary-dialog-container"></div>
 
         <div className="dialog-btn-container">
           <Button

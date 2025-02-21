@@ -5,20 +5,23 @@ import { Calendar } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Chart } from "primereact/chart";
-import NavbarComponent from "../NavbarComponent/NavbarComponent";
 import SidebarComponent from "../SidebarComponent/SidebarComponent";
 import "./BalanceProgression.css";
+import { jwtDecode } from "jwt-decode";
 
 export default function BalanceProgression() {
   const [progressionData, setProgressionData] = useState([]);
   const [chartData, setChartData] = useState({});
-  const [pieChartData, setPieChartData] = useState({});
+  const [categoryPieChartData, setCategoryPieChartData] = useState({});
+  const [subcategoryPieChartData, setSubategoryPieChartData] = useState({});
   const [loading, setLoading] = useState(false);
   const [intervalType, setIntervalType] = useState("MTD"); // Default to MTD
   const [customStartDate, setCustomStartDate] = useState(null);
   const [customEndDate, setCustomEndDate] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date());
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const intervalOptions = [
     { label: "Month to Date (MTD)", value: "MTD" },
@@ -32,44 +35,47 @@ export default function BalanceProgression() {
     try {
       setLoading(true);
 
-      const response = await axios.get(
-        "http://localhost:8181/v1/balance_progression",
-        {
-          params: { startDate, endDate },
+      if (token) {
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.id;
+
+        const response = await axios.get(`${apiUrl}/v1/balance_progression`, {
+          params: { userId, startDate, endDate },
           headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+        });
 
-      const data = response.data;
-      setProgressionData(data);
+        const data = response.data;
+        setProgressionData(data);
 
-      const sortedData = [...data].sort(
-        (a, b) => new Date(a.movement_date) - new Date(b.movement_date)
-      );
+        const sortedData = [...data].sort(
+          (a, b) => new Date(a.movement_date) - new Date(b.movement_date)
+        );
 
-      // Line Chart Data
-      const chartLabels = sortedData.map(
-        (item) => item.movement_date.split("T")[0]
-      );
-      const chartBalances = sortedData.map(
-        (item) => item.balance_after_movement
-      );
+        // Line Chart Data
+        const chartLabels = sortedData.map(
+          (item) => item.movement_date.split("T")[0]
+        );
+        const chartBalances = sortedData.map(
+          (item) => item.balance_after_movement
+        );
 
-      setChartData({
-        labels: chartLabels,
-        datasets: [
-          {
-            label: "Balance Progression",
-            data: chartBalances,
-            fill: false,
-            borderColor: "#42A5F5", // Blue color for the line
-            tension: 0.4,
-          },
-        ],
-      });
+        setChartData({
+          labels: chartLabels,
+          datasets: [
+            {
+              label: "Balance Progression",
+              data: chartBalances,
+              fill: false,
+              borderColor: "#42A5F5", // Blue color for the line
+              tension: 0.4,
+            },
+          ],
+        });
 
-      // Fetch category-wise expenditure for the pie chart
-      fetchCategoryData(startDate, endDate);
+        // Fetch category-wise expenditure for the pie chart
+        fetchCategoryData(userId, startDate, endDate);
+        fetchSubategoryData(userId, startDate, endDate);
+      }
     } catch (err) {
       console.error("Error fetching balance progression:", err);
     } finally {
@@ -77,17 +83,14 @@ export default function BalanceProgression() {
     }
   };
 
-  const fetchCategoryData = async (startDate, endDate) => {
+  const fetchCategoryData = async (userId, startDate, endDate) => {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await axios.get(
-        "http://localhost:8181/v1/category_spending",
-        {
-          params: { startDate, endDate },
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axios.get(`${apiUrl}/v1/category_spending`, {
+        params: { userId, startDate, endDate },
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const categoryData = response.data;
 
@@ -96,18 +99,43 @@ export default function BalanceProgression() {
 
       const documentStyle = getComputedStyle(document.documentElement);
 
-      setPieChartData({
+      setCategoryPieChartData({
         labels: pieLabels,
         datasets: [
           {
             data: pieValues,
-            backgroundColor: [
-              documentStyle.getPropertyValue("--red-500"),
-              documentStyle.getPropertyValue("--blue-500"),
-              documentStyle.getPropertyValue("--green-500"),
-              documentStyle.getPropertyValue("--yellow-500"),
-              documentStyle.getPropertyValue("--pink-500"),
-            ],
+            backgroundColor: [documentStyle.getPropertyValue("--red-500")],
+            label: "Category Spending",
+          },
+        ],
+      });
+    } catch (err) {
+      console.error("Error fetching category data:", err);
+    }
+  };
+
+  const fetchSubategoryData = async (userId, startDate, endDate) => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await axios.get(`${apiUrl}/v1/subcategory_spending`, {
+        params: { userId, startDate, endDate },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const subcategoryData = response.data;
+
+      const pieLabels = subcategoryData.map((item) => item.subcategory); // Category Names
+      const pieValues = subcategoryData.map((item) => item.total_spent); // Total Spent
+
+      const documentStyle = getComputedStyle(document.documentElement);
+
+      setSubategoryPieChartData({
+        labels: pieLabels,
+        datasets: [
+          {
+            data: pieValues,
+            backgroundColor: [documentStyle.getPropertyValue("--red-500")],
             label: "Category Spending",
           },
         ],
@@ -129,7 +157,7 @@ export default function BalanceProgression() {
     if (value === "MTD" || value === "YTD") {
       setProgressionData([]);
       setChartData({});
-      setPieChartData({});
+      setCategoryPieChartData({});
     }
   };
 
@@ -209,7 +237,6 @@ export default function BalanceProgression() {
   return (
     <div>
       <SidebarComponent />
-      <NavbarComponent />
       <div className="dropdown-container">
         <label htmlFor="intervalType">Select Interval:</label>
         <Dropdown
@@ -286,35 +313,10 @@ export default function BalanceProgression() {
 
       {/* Pie Chart Section */}
       <div className="chart-container">
-        <Chart type="pie" data={pieChartData} className="w-6" />
+        <Chart type="bar" data={categoryPieChartData} className="w-6" />
       </div>
-
-      <div className="table-container">
-        <DataTable
-          value={progressionData}
-          loading={loading}
-          paginator
-          rows={50}
-          rowsPerPageOptions={[50, 100, 200, 500]}
-          emptyMessage="No movements recorded in the selected interval."
-        >
-          <Column body={statusTemplate} style={{ width: "3rem" }}></Column>
-          <Column
-            field="movement_date"
-            header="Date"
-            body={(rowData) => rowData.movement_date.split("T")[0]}
-          ></Column>
-          <Column
-            field="amount"
-            header="Amount (€)"
-            body={(rowData) => `${rowData.amount} €`}
-          ></Column>
-          <Column
-            field="balance_after_movement"
-            header="Balance After (€)"
-            body={(rowData) => `${rowData.balance_after_movement} €`}
-          ></Column>
-        </DataTable>
+      <div className="chart-container">
+        <Chart type="bar" data={subcategoryPieChartData} className="w-6" />
       </div>
     </div>
   );

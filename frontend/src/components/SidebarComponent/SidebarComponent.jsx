@@ -30,11 +30,16 @@ export default function SidebarComponent() {
             <Link to="/balance_progression">Balance Progression</Link>
           </li>
           <li>
-            <Link to="/starting_amount">Starting Amount</Link>
-          </li>
-          <li>
             <Link to="/edit_categories">Edit Categories</Link>
           </li>
+          
+        </ul>
+        <h3>Account Settings</h3>
+        <ul className="sidebar-menu">
+          <li>
+            <Link to="/login">Logout</Link>
+          </li>
+          
         </ul>
       </Sidebar>
     </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import NavbarComponent from "../NavbarComponent/NavbarComponent";
 import axios from "axios";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -10,6 +9,8 @@ import SidebarComponent from "../SidebarComponent/SidebarComponent";
 import { Dialog } from "primereact/dialog";
 
 export default function CategoriesEditor() {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [mainCategories, setMainCategories] = useState([]); // For dropdown
   const [selectedMainCategory, setSelectedMainCategory] = useState(null); // Selected main category
   const [subcategories, setSubcategories] = useState([]); // Subcategories to display in table
@@ -31,9 +32,7 @@ export default function CategoriesEditor() {
 
   const fetchMainCategories = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:8181/v1/categories/main"
-      );
+      const response = await axios.get(`${apiUrl}/v1/categories/main`);
       setMainCategories(response.data);
     } catch (err) {
       console.error("Error fetching main categories:", err);
@@ -45,7 +44,7 @@ export default function CategoriesEditor() {
       const encodedCategory = encodeURIComponent(mainCategory);
 
       const response = await axios.get(
-        `http://localhost:8181/v1/categories/subcategories/${encodedCategory}`
+        `${apiUrl}/v1/categories/subcategories/${encodedCategory}`
       );
       setSubcategories(response.data); // Update subcategories for the selected main category
     } catch (err) {
@@ -71,7 +70,7 @@ export default function CategoriesEditor() {
 
   const handleAddMainCategory = async () => {
     try {
-      await axios.post("http://localhost:8181/v1/categories/main", {
+      await axios.post(`${apiUrl}/v1/categories/main`, {
         category: newMainCategory,
         subcategory: newSubCategory, // Include the subcategory name
       });
@@ -140,7 +139,6 @@ export default function CategoriesEditor() {
   return (
     <div className="maindiv">
       <SidebarComponent />
-      <NavbarComponent />
       <div>
         <DataTable
           value={subcategories}

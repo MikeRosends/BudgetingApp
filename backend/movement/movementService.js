@@ -4,6 +4,7 @@ const {
   getMovementsForUser,
   createMovement,
   getMovementsByUserId,
+  getBeforeAndAfterMovement,
   deleteMovement,
   updateMovement,
   getMainCategories,
@@ -15,6 +16,7 @@ const {
   insertStartingAmount,
   getTotalAmountByUser,
   getCategorySpendingFromDB,
+  getSubategorySpendingFromDB,
   createCategory,
   getHighestCategoryCode,
 } = require("./movementRepository");
@@ -37,7 +39,7 @@ const getTotalAmountForUser = async (user_id) => {
 const loadMovementsByUserId = async function (user_id) {
   try {
     // Fetch movements
-    const movements = await getMovementsByUserId(user_id);
+    const movements = await getBeforeAndAfterMovement(user_id);
 
     // Fetch all categories once to avoid multiple DB calls
     const categories = await getAllCategories(); // A new service function to fetch all categories
@@ -294,6 +296,25 @@ const getCategorySpending = async (user_id, startDate, endDate) => {
   }
 };
 
+const getSubcategorySpending = async (user_id, startDate, endDate) => {
+  try {
+    const subcategorySpending = await getSubategorySpendingFromDB(
+      user_id,
+      startDate,
+      endDate
+    );
+
+    // Format and return the data
+    return subcategorySpending.map((item) => ({
+      subcategory: item.subcategory,
+      total_spent: parseFloat(item.total_spent), // Convert string to number for consistent formatting
+    }));
+  } catch (err) {
+    console.error("Error in getSubcategorySpending service:", err);
+    throw new Error("Failed to fetch subcategory spending.");
+  }
+};
+
 module.exports = {
   getTotalAmountForUser,
   createNewMovement,
@@ -309,5 +330,6 @@ module.exports = {
   modifyStartingAmount,
   addStartingAmount,
   getCategorySpending,
+  getSubcategorySpending,
   createMainCategory,
 };

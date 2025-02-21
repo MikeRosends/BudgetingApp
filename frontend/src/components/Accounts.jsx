@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import NavbarComponent from "../components/NavbarComponent/NavbarComponent";
 import axios from "axios";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import format from "date-fns/format";
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
 export default function Accounts() {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [accountsArr, setAccountsArr] = useState([]);
 
   useEffect(() => {
@@ -23,13 +24,13 @@ export default function Accounts() {
 
       // Send the user_id as a query parameter in the Axios request
       axios
-        .get("http://localhost:8181/v1/account_with_userid", {
+        .get(`${apiUrl}/v1/account_with_userid`, {
           params: { user_id: userId }, // Pass user_id as a query parameter
         })
         .then((response) => {
           const data = response.data;
-          console.log('DATA -> ', data);
-          
+          console.log("DATA -> ", data);
+
           setAccountsArr(data);
         })
         .catch((error) => {
@@ -41,12 +42,11 @@ export default function Accounts() {
   }, []);
 
   const allowEdit = (rowData) => {
-    return rowData.name !== 'Blue Band';
-};
+    return rowData.name !== "Blue Band";
+  };
 
   return (
     <div className="flex">
-      <NavbarComponent />
       <div className="w-screen">
         <DataTable value={accountsArr} tableStyle={{ width: "50rem" }}>
           <Column
@@ -58,7 +58,11 @@ export default function Accounts() {
           ></Column>
           <Column field="account_name" header="Account Name"></Column>
           <Column field="amount" header="Amount"></Column>
-          <Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column>
+          <Column
+            rowEditor={allowEdit}
+            headerStyle={{ width: "10%", minWidth: "8rem" }}
+            bodyStyle={{ textAlign: "center" }}
+          ></Column>
         </DataTable>
       </div>
     </div>

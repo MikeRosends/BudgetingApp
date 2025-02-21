@@ -4,9 +4,11 @@ import axios from "axios";
 import "./dialogbox.css";
 
 export default function DeleteDialog({ visible, movement, onHide, onDelete }) {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const handleDelete = () => {
     axios
-      .delete(`http://localhost:8181/v1/movement/${movement.id}`)
+      .delete(`${apiUrl}/v1/movement/${movement.id}`)
       .then(() => {
         onDelete(movement.id); // Remove movement from state
         onHide(); // Close dialog

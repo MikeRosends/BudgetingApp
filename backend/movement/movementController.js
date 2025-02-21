@@ -15,6 +15,7 @@ const {
   modifyStartingAmount,
   addStartingAmount,
   getCategorySpending,
+  getSubcategorySpending,
 } = require("./movementService");
 const authMiddleware = require("../user/authMiddleware");
 
@@ -291,6 +292,30 @@ router.get("/v1/category_spending", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("Error in /v1/category_spending route:", err);
     res.status(500).json({ message: "Error fetching category spending." });
+  }
+});
+
+router.get("/v1/subcategory_spending", authMiddleware, async (req, res) => {
+  try {
+    const user_id = req.user.id; // Extracting user ID from the decoded token
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ message: "Start date and end date are required." });
+    }
+
+    const subcategorySpending = await getSubcategorySpending(
+      user_id,
+      startDate,
+      endDate
+    );
+
+    res.status(200).json(subcategorySpending);
+  } catch (err) {
+    console.error("Error in /v1/subcategory_spending route:", err);
+    res.status(500).json({ message: "Error fetching subcategory spending." });
   }
 });
 
